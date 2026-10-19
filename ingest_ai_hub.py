@@ -95,37 +95,104 @@ class HubItem:
 
 
 DEFAULT_SOURCES: List[SourceConfig] = [
+    # Track 1: AI Research Papers
     SourceConfig(
         id="src-hf-papers",
         name="Hugging Face Daily Papers",
         category="paper",
         driver="hf_papers_api",
         feed_url_or_query="https://huggingface.co/api/daily_papers",
-        config={"max_results": 20, "min_upvotes": 5},
+        config={"max_results": 40, "min_upvotes": 2},
     ),
     SourceConfig(
-        id="src-arxiv-ai",
-        name="arXiv AI, Computation & Language, and Machine Learning",
+        id="src-arxiv-ai-lg",
+        name="arXiv Artificial Intelligence & Machine Learning (cs.AI, cs.LG)",
         category="paper",
         driver="arxiv_api",
-        feed_url_or_query="cat:cs.AI OR cat:cs.CL OR cat:cs.LG",
-        config={"max_results": 25},
+        feed_url_or_query="cat:cs.AI OR cat:cs.LG",
+        config={"max_results": 45},
     ),
     SourceConfig(
+        id="src-arxiv-cl",
+        name="arXiv Computation & Language / LLMs (cs.CL)",
+        category="paper",
+        driver="arxiv_api",
+        feed_url_or_query="cat:cs.CL",
+        config={"max_results": 40},
+    ),
+    SourceConfig(
+        id="src-arxiv-cv",
+        name="arXiv Computer Vision & Multimodal Systems (cs.CV)",
+        category="paper",
+        driver="arxiv_api",
+        feed_url_or_query="cat:cs.CV",
+        config={"max_results": 35},
+    ),
+    SourceConfig(
+        id="src-arxiv-ma-ro-se",
+        name="arXiv Multi-Agent Systems, Robotics & Software Engineering (cs.MA, cs.RO, cs.SE)",
+        category="paper",
+        driver="arxiv_api",
+        feed_url_or_query="cat:cs.MA OR cat:cs.RO OR cat:cs.SE",
+        config={"max_results": 35},
+    ),
+    # Track 2: GitHub AI Tools & Repositories
+    SourceConfig(
         id="src-gh-agents",
-        name="GitHub Trending AI Agents, MCP & LLM Tools",
+        name="GitHub Trending AI Agents & Autonomous Workflows",
         category="github",
         driver="github_api",
-        feed_url_or_query="topic:ai-agents OR topic:mcp OR topic:llm-tools OR topic:rag",
-        config={"days_back": 14, "min_stars": 30, "max_results": 20},
+        feed_url_or_query="topic:ai-agents",
+        config={"days_back": 30, "min_stars": 15, "max_results": 30},
     ),
+    SourceConfig(
+        id="src-gh-mcp",
+        name="GitHub Model Context Protocol (MCP) Servers & Tools",
+        category="github",
+        driver="github_api",
+        feed_url_or_query="topic:mcp",
+        config={"days_back": 45, "min_stars": 10, "max_results": 30},
+    ),
+    SourceConfig(
+        id="src-gh-rag",
+        name="GitHub LLM Tools, RAG & Vector Databases",
+        category="github",
+        driver="github_api",
+        feed_url_or_query="topic:rag",
+        config={"days_back": 30, "min_stars": 15, "max_results": 25},
+    ),
+    SourceConfig(
+        id="src-gh-llm",
+        name="GitHub Large Language Models & Local Inference",
+        category="github",
+        driver="github_api",
+        feed_url_or_query="topic:large-language-models",
+        config={"days_back": 30, "min_stars": 20, "max_results": 25},
+    ),
+    SourceConfig(
+        id="src-gh-coding",
+        name="GitHub AI Coding Assistants & Developer Tools",
+        category="github",
+        driver="github_api",
+        feed_url_or_query='"claude code" OR "mcp server" OR "coding agent" in:name,description',
+        config={"days_back": 21, "min_stars": 15, "max_results": 25},
+    ),
+    SourceConfig(
+        id="src-gh-breakout",
+        name="GitHub Active Breakout AI Repositories",
+        category="github",
+        driver="github_api",
+        feed_url_or_query="topic:artificial-intelligence",
+        config={"days_back": 14, "min_stars": 25, "max_results": 25},
+    ),
+    # Track 3: YouTube AI Channels & Video Breakdowns
     SourceConfig(
         id="src-yt-twomin",
         name="Two Minute Papers (YouTube RSS)",
         category="youtube",
         driver="youtube_rss",
         feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
-        config={"max_results": 10},
+        config={"max_results": 15},
     ),
     SourceConfig(
         id="src-yt-karpathy",
@@ -133,31 +200,184 @@ DEFAULT_SOURCES: List[SourceConfig] = [
         category="youtube",
         driver="youtube_rss",
         feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCXUPKJO5MZQN11PqgIvyuvQ",
-        config={"max_results": 10},
+        config={"max_results": 15},
     ),
     SourceConfig(
+        id="src-yt-kilcher",
+        name="Yannic Kilcher (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-aiexplained",
+        name="AI Explained (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-berman",
+        name="Matthew Berman (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCawZsQWqfGSbCI5yjkdVkTA",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-witteveen",
+        name="Sam Witteveen — AI & LLM Engineering (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UC55ODQSvARtgSyc8ThfiepQ",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-aijason",
+        name="AI Jason (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCrXSVX9a1mj8l0CMLwKgMVw",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-colemedin",
+        name="Cole Medin — AI Agents & Local AI (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCMwVTLZIRRUyyVrkjDpn4pA",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-fireship",
+        name="Fireship (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-latentspace",
+        name="Latent Space Podcast — AI Engineers (YouTube RSS)",
+        category="youtube",
+        driver="youtube_rss",
+        feed_url_or_query="https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCGnM7bwQv91M20cec9e5VCg",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-yt-search",
+        name="YouTube AI Engineering & Paper Breakdowns Search",
+        category="youtube",
+        driver="youtube_api",
+        feed_url_or_query="AI agents OR LLM engineering OR MCP server OR arXiv paper explained",
+        config={"max_results": 25, "days_back": 14},
+    ),
+    # Track 4: AI Lab Blogs, Engineering News, Reddit & Show HN Projects
+    SourceConfig(
         id="src-hn-news",
-        name="Hacker News High-Signal AI Stories",
+        name="Hacker News High-Signal AI & LLM Stories",
         category="news",
         driver="hn_algolia_api",
-        feed_url_or_query='LLM OR "AI agent" OR Anthropic OR OpenAI OR Gemini OR DeepMind',
-        config={"tags": "story", "min_points": 50, "max_results": 20},
+        feed_url_or_query='LLM OR "AI agent" OR Anthropic OR OpenAI OR Gemini OR DeepMind OR Qwen OR Llama',
+        config={"tags": "story", "min_points": 20, "max_results": 35},
+    ),
+    SourceConfig(
+        id="src-hn-eng",
+        name="Hacker News AI Engineering, RAG & MCP Discussions",
+        category="news",
+        driver="hn_algolia_api",
+        feed_url_or_query='MCP OR RAG OR vLLM OR Ollama OR "Claude Code" OR Cursor OR Fine-tuning',
+        config={"tags": "story", "min_points": 15, "max_results": 30},
     ),
     SourceConfig(
         id="src-hn-show",
         name="Show HN: Innovative AI Projects & Launches",
         category="project",
         driver="hn_algolia_api",
-        feed_url_or_query="Show HN AI OR LLM OR Agent OR MCP",
-        config={"tags": "show_hn", "min_points": 15, "max_results": 20},
+        feed_url_or_query="Show HN AI OR LLM OR Agent OR MCP OR GPT OR RAG",
+        config={"tags": "show_hn", "min_points": 5, "max_results": 35},
+    ),
+    SourceConfig(
+        id="src-rss-openai",
+        name="OpenAI Official News & Product Releases (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://openai.com/news/rss.xml",
+        config={"max_results": 20},
+    ),
+    SourceConfig(
+        id="src-rss-hfblog",
+        name="Hugging Face Official Blog (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://huggingface.co/blog/feed.xml",
+        config={"max_results": 20},
+    ),
+    SourceConfig(
+        id="src-rss-googleai",
+        name="Google AI & DeepMind Research Blog (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://blog.google/technology/ai/rss/",
+        config={"max_results": 20},
     ),
     SourceConfig(
         id="src-rss-simonw",
-        name="Simon Willison Weblog (AI & LLM Engineering RSS)",
+        name="Simon Willison Weblog (AI & LLM Engineering Atom)",
         category="news",
         driver="rss_feed",
         feed_url_or_query="https://simonwillison.net/atom/everything/",
+        config={"max_results": 20},
+    ),
+    SourceConfig(
+        id="src-rss-latentspace",
+        name="Latent Space — The AI Engineer Substack (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://www.latent.space/feed",
         config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-rss-raschka",
+        name="Ahead of AI — Sebastian Raschka (LLM Research RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://magazine.sebastianraschka.com/feed",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-rss-lilianweng",
+        name="Lilian Weng — OpenAI / AI Research Deep Dives (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://lilianweng.github.io/index.xml",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-rss-langchain",
+        name="LangChain Engineering & Agent Workflows Blog (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://blog.langchain.dev/rss/",
+        config={"max_results": 15},
+    ),
+    SourceConfig(
+        id="src-rss-localllama",
+        name="r/LocalLLaMA — Open-Weights Models & Local AI Setups (RSS)",
+        category="project",
+        driver="rss_feed",
+        feed_url_or_query="https://www.reddit.com/r/LocalLLaMA/top/.rss?t=week",
+        config={"max_results": 25},
+    ),
+    SourceConfig(
+        id="src-rss-mlreddit",
+        name="r/MachineLearning — Research Discussions & Implementations (RSS)",
+        category="news",
+        driver="rss_feed",
+        feed_url_or_query="https://www.reddit.com/r/MachineLearning/hot/.rss",
+        config={"max_results": 20},
     ),
 ]
 
@@ -247,8 +467,8 @@ def fetch_arxiv_papers(source: SourceConfig) -> List[HubItem]:
 
 def fetch_hf_daily_papers(source: SourceConfig) -> List[HubItem]:
     """Fetches community-curated AI papers from Hugging Face Daily Papers."""
-    max_results = int(source.config.get("max_results", 20))
-    min_upvotes = int(source.config.get("min_upvotes", 3))
+    max_results = int(source.config.get("max_results", 35))
+    min_upvotes = int(source.config.get("min_upvotes", 2))
     payload = json.loads(http_request(source.feed_url_or_query).decode("utf-8"))
 
     items: List[HubItem] = []
@@ -286,12 +506,20 @@ def fetch_hf_daily_papers(source: SourceConfig) -> List[HubItem]:
 
 def fetch_github_repos(source: SourceConfig) -> List[HubItem]:
     """Queries GitHub REST Search API for fast-growing AI repositories and tools."""
-    days_back = int(source.config.get("days_back", 14))
-    min_stars = int(source.config.get("min_stars", 25))
-    max_results = int(source.config.get("max_results", 20))
+    days_back = int(source.config.get("days_back", 21))
+    min_stars = int(source.config.get("min_stars", 15))
+    max_results = int(source.config.get("max_results", 25))
     cutoff = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days_back)).strftime("%Y-%m-%d")
 
-    full_query = f"({source.feed_url_or_query}) created:>{cutoff} stars:>={min_stars}"
+    raw_q = source.feed_url_or_query.strip()
+    # Avoid wrapping simple topic queries in outer parentheses when OR is present,
+    # and use pushed:>cutoff when multiple OR topics are used so active repos aren't dropped.
+    if " OR " in raw_q and "topic:" in raw_q:
+        primary_topic = raw_q.split(" OR ")[0].strip()
+        full_query = f"{primary_topic} pushed:>{cutoff} stars:>={min_stars}"
+    else:
+        full_query = f"{raw_q} created:>{cutoff} stars:>={min_stars}"
+
     params = urllib.parse.urlencode(
         {"q": full_query, "sort": "stars", "order": "desc", "per_page": max_results}
     )
@@ -633,48 +861,85 @@ def fallback_enrich(item: HubItem) -> None:
         )
 
 
-def enrich_with_gemini(item: HubItem, api_key: Optional[str]) -> None:
-    """Calls Gemini 2.5 Flash to synthesize a 2-sentence summary, practical takeaway, and tags."""
-    if not api_key:
-        fallback_enrich(item)
+def enrich_batch_with_gemini(items: List[HubItem], api_key: Optional[str], chunk_size: int = 12) -> None:
+    """Enriches new items in batches of 12 per Gemini API call to stay well within free-tier RPM limits."""
+    if not items:
         return
-
-    prompt = (
-        "You are an expert AI research and engineering assistant curating a personal AI hub.\n"
-        "Analyze the following item and return strictly valid JSON with keys:\n"
-        '  - "ai_summary": A clear, jargon-free 2-sentence summary of what is new.\n'
-        '  - "practical_takeaway": 1 concrete sentence explaining how an AI practitioner can use or apply this to elevate their workflow.\n'
-        '  - "tags": An array of 2 to 4 lowercase capability tags (e.g., ["agents", "mcp", "rag", "fine-tuning", "coding", "multimodal", "local-ai", "evals"]).\n\n'
-        f"Category: {item.category}\n"
-        f"Title: {item.title}\n"
-        f"Creator/Authors: {item.authors_or_creator}\n"
-        f"Description: {item.raw_summary}\n"
-    )
+    if not api_key:
+        for item in items:
+            fallback_enrich(item)
+        return
 
     url = (
         "https://generativelanguage.googleapis.com/v1beta/models/"
         f"gemini-2.5-flash:generateContent?key={urllib.parse.quote(api_key)}"
     )
-    body = {
-        "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
-    }
 
-    try:
-        raw_resp = http_request(url, method="POST", json_body=body, timeout=20)
-        parsed_resp = json.loads(raw_resp.decode("utf-8"))
-        text_out = (
-            parsed_resp["candidates"][0]["content"]["parts"][0]["text"]
+    for start_idx in range(0, len(items), chunk_size):
+        chunk = items[start_idx : start_idx + chunk_size]
+        items_payload = [
+            {
+                "index": idx,
+                "category": it.category,
+                "title": it.title,
+                "creator": it.authors_or_creator,
+                "description": it.raw_summary[:600],
+            }
+            for idx, it in enumerate(chunk)
+        ]
+
+        prompt = (
+            "You are an expert AI research and engineering assistant curating a personal AI hub.\n"
+            "Analyze each item in the input JSON array and return a JSON array of objects where each object has:\n"
+            '  - "index": The integer index matching the input item.\n'
+            '  - "ai_summary": A clear, jargon-free 2-sentence summary of what is new.\n'
+            '  - "practical_takeaway": 1 concrete sentence explaining how an AI practitioner can use or apply this to elevate their workflow.\n'
+            '  - "tags": An array of 2 to 4 lowercase capability tags (e.g., ["agents", "mcp", "rag", "fine-tuning", "coding", "multimodal", "local-ai", "prompting"]).\n\n'
+            f"Input Items JSON:\n{json.dumps(items_payload, ensure_ascii=False)}\n"
         )
-        data = json.loads(text_out)
-        item.ai_summary = clean_text(data.get("ai_summary"), 500)
-        item.practical_takeaway = clean_text(data.get("practical_takeaway"), 400)
-        tags = data.get("tags") or []
-        if isinstance(tags, list):
-            item.tags = [str(t).lower().strip() for t in tags[:5] if str(t).strip()]
-    except Exception as exc:
-        logger.warning("Gemini enrichment fallback for '%s': %s", item.title[:50], exc)
-        fallback_enrich(item)
+
+        body = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"responseMimeType": "application/json", "temperature": 0.2},
+        }
+
+        try:
+            raw_resp = http_request(url, method="POST", json_body=body, timeout=35)
+            parsed_resp = json.loads(raw_resp.decode("utf-8"))
+            text_out = parsed_resp["candidates"][0]["content"]["parts"][0]["text"]
+            data = json.loads(text_out)
+            if isinstance(data, dict):
+                data = data.get("items") or data.get("results") or []
+
+            enriched_by_idx: Dict[int, Dict[str, Any]] = {}
+            if isinstance(data, list):
+                for entry in data:
+                    if isinstance(entry, dict) and "index" in entry:
+                        try:
+                            enriched_by_idx[int(entry["index"])] = entry
+                        except (ValueError, TypeError):
+                            pass
+
+            for idx, item in enumerate(chunk):
+                res = enriched_by_idx.get(idx)
+                if res:
+                    item.ai_summary = clean_text(res.get("ai_summary"), 500)
+                    item.practical_takeaway = clean_text(res.get("practical_takeaway"), 400)
+                    tags = res.get("tags") or []
+                    if isinstance(tags, list):
+                        item.tags = [str(t).lower().strip() for t in tags[:5] if str(t).strip()]
+                if not item.ai_summary or not item.practical_takeaway or not item.tags:
+                    fallback_enrich(item)
+
+        except Exception as exc:
+            logger.warning(
+                "Gemini batch enrichment fallback for chunk %d..%d: %s",
+                start_idx,
+                start_idx + len(chunk),
+                exc,
+            )
+            for item in chunk:
+                fallback_enrich(item)
 
 
 # =============================================================================
@@ -726,24 +991,28 @@ class SQLiteStorage:
                 );
                 """
             )
-            # Seed default sources if empty
-            count = self.conn.execute("SELECT COUNT(*) FROM sources").fetchone()[0]
-            if count == 0:
-                for src in DEFAULT_SOURCES:
-                    self.conn.execute(
-                        """
-                        INSERT OR IGNORE INTO sources (id, name, category, driver, feed_url_or_query, config)
-                        VALUES (?, ?, ?, ?, ?, ?)
-                        """,
-                        (
-                            src.id,
-                            src.name,
-                            src.category,
-                            src.driver,
-                            src.feed_url_or_query,
-                            json.dumps(src.config),
-                        ),
-                    )
+        self.ensure_default_sources()
+
+    def ensure_default_sources(self) -> None:
+        with self.conn:
+            for src in DEFAULT_SOURCES:
+                self.conn.execute(
+                    """
+                    INSERT INTO sources (id, name, category, driver, feed_url_or_query, config, active)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
+                    ON CONFLICT(feed_url_or_query) DO UPDATE SET
+                        name = excluded.name,
+                        config = excluded.config
+                    """,
+                    (
+                        src.id,
+                        src.name,
+                        src.category,
+                        src.driver,
+                        src.feed_url_or_query,
+                        json.dumps(src.config),
+                    ),
+                )
 
     def get_active_sources(self, category_filter: Optional[str] = None) -> List[SourceConfig]:
         query = "SELECT * FROM sources WHERE active = 1"
@@ -856,6 +1125,26 @@ class SupabaseRestStorage:
         # tokens passed strictly via the `apikey` header.
         if not service_key.startswith("sb_"):
             self.headers["Authorization"] = f"Bearer {service_key}"
+
+    def ensure_default_sources(self) -> None:
+        """Upserts all DEFAULT_SOURCES into Supabase so new feeds added in git automatically take effect."""
+        url = f"{self.base_url}/sources?on_conflict=feed_url_or_query"
+        headers = {**self.headers, "Prefer": "resolution=merge-duplicates"}
+        payload = [
+            {
+                "name": src.name,
+                "category": src.category,
+                "driver": src.driver,
+                "feed_url_or_query": src.feed_url_or_query,
+                "config": src.config,
+                "active": True,
+            }
+            for src in DEFAULT_SOURCES
+        ]
+        try:
+            http_request(url, method="POST", headers=headers, json_body=payload)
+        except Exception as exc:
+            logger.warning("Could not sync default sources to Supabase: %s", exc)
 
     def get_active_sources(self, category_filter: Optional[str] = None) -> List[SourceConfig]:
         url = f"{self.base_url}/sources?active=eq.true&select=*"
@@ -978,6 +1267,8 @@ def run_pipeline(args: argparse.Namespace) -> int:
     elif supabase_url and supabase_key:
         logger.info("Connecting to Supabase REST API: %s", supabase_url)
         storage = SupabaseRestStorage(supabase_url, supabase_key)
+        if not args.dry_run:
+            storage.ensure_default_sources()
     elif os.environ.get("GITHUB_ACTIONS") == "true" and not args.dry_run:
         logger.error(
             "Running inside GitHub Actions without SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. "
@@ -1036,6 +1327,15 @@ def run_pipeline(args: argparse.Namespace) -> int:
             if args.limit:
                 fetched_items = fetched_items[: args.limit]
 
+            # Deduplicate within the same source batch by external_id
+            deduped_items: List[HubItem] = []
+            seen_in_source: Set[str] = set()
+            for item in fetched_items:
+                if item.external_id not in seen_in_source:
+                    seen_in_source.add(item.external_id)
+                    deduped_items.append(item)
+            fetched_items = deduped_items
+
             existing_ids = storage.get_existing_external_ids(
                 [item.external_id for item in fetched_items]
             )
@@ -1044,11 +1344,13 @@ def run_pipeline(args: argparse.Namespace) -> int:
 
             for item in fetched_items:
                 if item.external_id not in existing_ids:
-                    enrich_with_gemini(item, gemini_key)
                     new_batch.append(item)
                 else:
                     fallback_enrich(item)
                     existing_batch.append(item)
+
+            if new_batch:
+                enrich_batch_with_gemini(new_batch, gemini_key)
 
             if args.dry_run:
                 all_collected.extend(new_batch + existing_batch)

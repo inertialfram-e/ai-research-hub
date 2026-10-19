@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 */6 * * *' # Runs every 6 hours
   workflow_dispatch:      # Allows 1-click manual runs in the Actions tab
+  push:
+    branches: [ main ]
+    paths:
+      - 'ingest_ai_hub.py'
+      - '.github/workflows/ingest.yml'
 
 jobs:
   ingest:

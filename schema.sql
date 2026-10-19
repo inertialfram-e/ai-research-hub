@@ -232,92 +232,272 @@ ORDER BY
     i.published_at DESC;
 
 -- -----------------------------------------------------------------------------
--- 8. Seed Default Sources Across All 4 Requested Tracks
+-- 8. Seed Default Sources Across All 4 Requested Tracks (30+ High-Signal Feeds)
 -- -----------------------------------------------------------------------------
 INSERT INTO sources (name, category, driver, feed_url_or_query, config)
 VALUES
-    -- Track 1: AI Research Papers
+    -- =========================================================================
+    -- Track 1: AI Research Papers (Hugging Face + arXiv Core AI Categories)
+    -- =========================================================================
     (
         'Hugging Face Daily Papers',
         'paper',
         'hf_papers_api',
         'https://huggingface.co/api/daily_papers',
-        '{"max_results": 20, "min_upvotes": 5}'::jsonb
+        '{"max_results": 40, "min_upvotes": 2}'::jsonb
     ),
     (
-        'arXiv AI, Computation & Language, and Machine Learning',
+        'arXiv Artificial Intelligence & Machine Learning (cs.AI, cs.LG)',
         'paper',
         'arxiv_api',
-        'cat:cs.AI OR cat:cs.CL OR cat:cs.LG',
-        '{"max_results": 25}'::jsonb
-    ),
-
-    -- Track 2: New AI Tools on GitHub
-    (
-        'GitHub Trending AI Agents, MCP & LLM Tools',
-        'github',
-        'github_api',
-        'topic:ai-agents OR topic:mcp OR topic:llm-tools OR topic:rag',
-        '{"days_back": 14, "min_stars": 30, "max_results": 20}'::jsonb
+        'cat:cs.AI OR cat:cs.LG',
+        '{"max_results": 45}'::jsonb
     ),
     (
-        'GitHub New Open-Source AI Repositories',
-        'github',
-        'github_api',
-        'topic:artificial-intelligence OR topic:large-language-models',
-        '{"days_back": 7, "min_stars": 50, "max_results": 15}'::jsonb
+        'arXiv Computation & Language / LLMs (cs.CL)',
+        'paper',
+        'arxiv_api',
+        'cat:cs.CL',
+        '{"max_results": 40}'::jsonb
+    ),
+    (
+        'arXiv Computer Vision & Multimodal Systems (cs.CV)',
+        'paper',
+        'arxiv_api',
+        'cat:cs.CV',
+        '{"max_results": 35}'::jsonb
+    ),
+    (
+        'arXiv Multi-Agent Systems, Robotics & Software Engineering (cs.MA, cs.RO, cs.SE)',
+        'paper',
+        'arxiv_api',
+        'cat:cs.MA OR cat:cs.RO OR cat:cs.SE',
+        '{"max_results": 35}'::jsonb
     ),
 
-    -- Track 3: New YouTube AI Videos (Zero-Quota Native XML Feeds + Search)
+    -- =========================================================================
+    -- Track 2: New & Trending AI Tools on GitHub
+    -- =========================================================================
+    (
+        'GitHub Trending AI Agents & Autonomous Workflows',
+        'github',
+        'github_api',
+        'topic:ai-agents',
+        '{"days_back": 30, "min_stars": 15, "max_results": 30}'::jsonb
+    ),
+    (
+        'GitHub Model Context Protocol (MCP) Servers & Tools',
+        'github',
+        'github_api',
+        'topic:mcp',
+        '{"days_back": 45, "min_stars": 10, "max_results": 30}'::jsonb
+    ),
+    (
+        'GitHub LLM Tools, RAG & Vector Databases',
+        'github',
+        'github_api',
+        'topic:rag',
+        '{"days_back": 30, "min_stars": 15, "max_results": 25}'::jsonb
+    ),
+    (
+        'GitHub Large Language Models & Local Inference',
+        'github',
+        'github_api',
+        'topic:large-language-models',
+        '{"days_back": 30, "min_stars": 20, "max_results": 25}'::jsonb
+    ),
+    (
+        'GitHub AI Coding Assistants & Developer Tools',
+        'github',
+        'github_api',
+        ' "claude code" OR "mcp server" OR "coding agent" in:name,description',
+        '{"days_back": 21, "min_stars": 15, "max_results": 25}'::jsonb
+    ),
+    (
+        'GitHub Active Breakout AI Repositories (Updated Recently)',
+        'github',
+        'github_api',
+        'topic:artificial-intelligence',
+        '{"days_back": 14, "min_stars": 25, "max_results": 25}'::jsonb
+    ),
+
+    -- =========================================================================
+    -- Track 3: YouTube AI Channels & Video Breakdowns (Zero-Quota XML + API)
+    -- =========================================================================
     (
         'Two Minute Papers (YouTube RSS)',
         'youtube',
         'youtube_rss',
         'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg',
-        '{"max_results": 10}'::jsonb
+        '{"max_results": 15}'::jsonb
     ),
     (
         'Andrej Karpathy (YouTube RSS)',
         'youtube',
         'youtube_rss',
         'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCXUPKJO5MZQN11PqgIvyuvQ',
-        '{"max_results": 10}'::jsonb
+        '{"max_results": 15}'::jsonb
     ),
     (
         'Yannic Kilcher (YouTube RSS)',
         'youtube',
         'youtube_rss',
         'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew',
-        '{"max_results": 10}'::jsonb
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'AI Explained (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Matthew Berman (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCawZsQWqfGSbCI5yjkdVkTA',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Sam Witteveen — AI & LLM Engineering (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UC55ODQSvARtgSyc8ThfiepQ',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'AI Jason (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCrXSVX9a1mj8l0CMLwKgMVw',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Cole Medin — AI Agents & Local AI (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCMwVTLZIRRUyyVrkjDpn4pA',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Fireship (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Latent Space Podcast — AI Engineers (YouTube RSS)',
+        'youtube',
+        'youtube_rss',
+        'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCGnM7bwQv91M20cec9e5VCg',
+        '{"max_results": 15}'::jsonb
     ),
     (
         'YouTube AI Engineering & Paper Breakdowns Search',
         'youtube',
         'youtube_api',
-        'AI agents OR LLM engineering OR arXiv paper explained',
-        '{"max_results": 15, "days_back": 7}'::jsonb
+        'AI agents OR LLM engineering OR MCP server OR arXiv paper explained',
+        '{"max_results": 25, "days_back": 14}'::jsonb
     ),
 
-    -- Track 4: AI Articles, News & Innovative Projects
+    -- =========================================================================
+    -- Track 4: AI Lab Blogs, Engineering News, Reddit & Show HN Projects
+    -- =========================================================================
     (
-        'Hacker News High-Signal AI Stories',
+        'Hacker News High-Signal AI & LLM Stories',
         'news',
         'hn_algolia_api',
-        'LLM OR "AI agent" OR Anthropic OR OpenAI OR Gemini OR DeepMind',
-        '{"tags": "story", "min_points": 50, "max_results": 20}'::jsonb
+        'LLM OR "AI agent" OR Anthropic OR OpenAI OR Gemini OR DeepMind OR Qwen OR Llama',
+        '{"tags": "story", "min_points": 20, "max_results": 35}'::jsonb
+    ),
+    (
+        'Hacker News AI Engineering, RAG & MCP Discussions',
+        'news',
+        'hn_algolia_api',
+        'MCP OR RAG OR vLLM OR Ollama OR "Claude Code" OR Cursor OR Fine-tuning',
+        '{"tags": "story", "min_points": 15, "max_results": 30}'::jsonb
     ),
     (
         'Show HN: Innovative AI Projects & Launches',
         'project',
         'hn_algolia_api',
-        'Show HN AI OR LLM OR Agent OR MCP',
-        '{"tags": "show_hn", "min_points": 15, "max_results": 20}'::jsonb
+        'Show HN AI OR LLM OR Agent OR MCP OR GPT OR RAG',
+        '{"tags": "show_hn", "min_points": 5, "max_results": 35}'::jsonb
     ),
     (
-        'Simon Willison Weblog (AI & LLM Engineering RSS)',
+        'OpenAI Official News & Product Releases (RSS)',
+        'news',
+        'rss_feed',
+        'https://openai.com/news/rss.xml',
+        '{"max_results": 20}'::jsonb
+    ),
+    (
+        'Hugging Face Official Blog (RSS)',
+        'news',
+        'rss_feed',
+        'https://huggingface.co/blog/feed.xml',
+        '{"max_results": 20}'::jsonb
+    ),
+    (
+        'Google AI & DeepMind Research Blog (RSS)',
+        'news',
+        'rss_feed',
+        'https://blog.google/technology/ai/rss/',
+        '{"max_results": 20}'::jsonb
+    ),
+    (
+        'Simon Willison Weblog (AI & LLM Engineering Atom)',
         'news',
         'rss_feed',
         'https://simonwillison.net/atom/everything/',
+        '{"max_results": 20}'::jsonb
+    ),
+    (
+        'Latent Space — The AI Engineer Substack (RSS)',
+        'news',
+        'rss_feed',
+        'https://www.latent.space/feed',
         '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Ahead of AI — Sebastian Raschka (LLM Research RSS)',
+        'news',
+        'rss_feed',
+        'https://magazine.sebastianraschka.com/feed',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'Lilian Weng — OpenAI / AI Research Deep Dives (RSS)',
+        'news',
+        'rss_feed',
+        'https://lilianweng.github.io/index.xml',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'LangChain Engineering & Agent Workflows Blog (RSS)',
+        'news',
+        'rss_feed',
+        'https://blog.langchain.dev/rss/',
+        '{"max_results": 15}'::jsonb
+    ),
+    (
+        'r/LocalLLaMA — Open-Weights Models & Local AI Setups (RSS)',
+        'project',
+        'rss_feed',
+        'https://www.reddit.com/r/LocalLLaMA/top/.rss?t=week',
+        '{"max_results": 25}'::jsonb
+    ),
+    (
+        'r/MachineLearning — Research Discussions & Implementations (RSS)',
+        'news',
+        'rss_feed',
+        'https://www.reddit.com/r/MachineLearning/hot/.rss',
+        '{"max_results": 20}'::jsonb
     )
-ON CONFLICT (feed_url_or_query) DO NOTHING;
+ON CONFLICT (feed_url_or_query) DO UPDATE SET
+    config = EXCLUDED.config,
+    name = EXCLUDED.name,
+    active = TRUE;
+
