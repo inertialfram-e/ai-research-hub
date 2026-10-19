@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexusAI — Personal AI Research, Tools & Systems Hub</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500/30 selection:text-indigo-200">
+
+  <!-- Top Navigation & Command Bar -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">NexusAI Hub</h1>
+            <span id="connectionBadge" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+              Local + Live API Mode
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Personal command center for AI papers, GitHub tools, YouTube walkthroughs &amp; breakthroughs</p>
+        </div>
+      </div>
+
+      <!-- Search & Action Controls -->
+      <div class="flex items-center gap-2 flex-1 sm:flex-initial justify-end min-w-[260px]">
+        <div class="relative flex-1 sm:w-64 md:w-72">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z" />
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search papers, repos, takeaways, notes..."
+            class="w-full pl-9 pr-7 py-1.5 text-xs sm:text-sm bg-slate-900 border border-slate-800 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+          />
+          <button
+            id="clearSearchBtn"
+            type="button"
+            title="Clear search"
+            class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 p-0.5"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <button
+          id="syncLiveBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/20 transition whitespace-nowrap"
+        >
+          <svg id="syncIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span id="syncBtnLabel">Pull Live Feeds</span>
+        </button>
+
+        <button
+          id="openAddItemBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition whitespace-nowrap"
+          title="Log a custom AI paper, tool, or video"
+        >
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span class="hidden md:inline">Log Item</span>
+        </button>
+
+        <button
+          id="openSourcesModalBtn"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition whitespace-nowrap"
+          title="Manage automated feeds & Supabase connection"
+        >
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span class="hidden sm:inline">Sources &amp; DB</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 flex-1 flex flex-col gap-5">
+
+    <!-- Top KPI & Workflow Elevation Strip -->
+    <section class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <button
+        type="button"
+        data-quick-view="all"
+        class="quick-stat-btn text-left p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition flex items-center justify-between"
+      >
+        <div>
+          <p class="text-xs font-medium text-slate-400">Total Tracked Items</p>
+          <p id="statTotalCount" class="text-xl sm:text-2xl font-bold text-white mt-0.5">0</p>
+        </div>
+        <div class="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        data-quick-view="to_test"
+        class="quick-stat-btn text-left p-3.5 rounded-xl bg-slate-900/90 border border-amber-500/30 hover:border-amber-400/60 transition flex items-center justify-between"
+      >
+        <div>
+          <p class="text-xs font-medium text-amber-300/90">Queued "To Test"</p>
+          <p id="statToTestCount" class="text-xl sm:text-2xl font-bold text-amber-300 mt-0.5">0</p>
+        </div>
+        <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        data-quick-view="applied"
+        class="quick-stat-btn text-left p-3.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 hover:border-emerald-400/60 transition flex items-center justify-between"
+      >
+        <div>
+          <p class="text-xs font-medium text-emerald-300/90">Applied in Workflow</p>
+          <p id="statAppliedCount" class="text-xl sm:text-2xl font-bold text-emerald-300 mt-0.5">0</p>
+        </div>
+        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        data-quick-view="bookmarked"
+        class="quick-stat-btn text-left p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition flex items-center justify-between"
+      >
+        <div>
+          <p class="text-xs font-medium text-slate-400">Bookmarked Library</p>
+          <p id="statBookmarkedCount" class="text-xl sm:text-2xl font-bold text-white mt-0.5">0</p>
+        </div>
+        <div class="w-9 h-9 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+          </svg>
+        </div>
+      </button>
+    </section>
+
+    <!-- Primary Track Navigation & Workflow Filters -->
+    <section class="bg-slate-900/70 border border-slate-800/90 rounded-2xl p-3 sm:p-4 flex flex-col gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+        <!-- Category / View Tabs -->
+        <div id="categoryTabs" class="flex flex-wrap items-center gap-1.5">
+          <!-- Rendered dynamically by JS -->
+        </div>
+
+        <!-- Sort & Unread Controls -->
+        <div class="flex items-center gap-2 ml-auto">
+          <label class="inline-flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer select-none px-2 py-1 rounded-lg bg-slate-800/70 border border-slate-700/70">
+            <input id="unreadOnlyToggle" type="checkbox" class="rounded bg-slate-900 border-slate-600 text-indigo-500 focus:ring-0" />
+            <span>Hide Archived</span>
+          </label>
+
+          <select
+            id="sortSelect"
+            aria-label="Sort feed items"
+            class="text-xs bg-slate-800 border border-slate-700 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="signal">Sort: Highest Signal</option>
+            <option value="newest">Sort: Newest Published</option>
+            <option value="action">Sort: Action Queue First</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Capability Tags Filter Bar -->
+      <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+        <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 shrink-0">Capability Tag:</span>
+        <div id="tagFilterBar" class="flex items-center gap-1.5">
+          <!-- Rendered dynamically by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Filter Banner & Feed Grid -->
+    <section class="flex-1 flex flex-col gap-3">
+      <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+        <p id="resultsSummaryText">Showing all items</p>
+        <button
+          id="resetFiltersBtn"
+          type="button"
+          class="hidden text-indigo-400 hover:text-indigo-300 font-medium underline underline-offset-4"
+        >
+          Reset all filters
+        </button>
+      </div>
+
+      <!-- Feed Cards Grid -->
+      <div id="feedGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden py-14 px-4 text-center bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
+        <div class="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-400 mx-auto flex items-center justify-center mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103.5 10.5a7.5 7.5 0 0013.15 6.15z" />
+          </svg>
+        </div>
+        <h2 class="text-base font-semibold text-slate-200">No matching AI items found</h2>
+        <p class="text-xs text-slate-400 max-w-md mx-auto mt-1">Try clearing your capability tag or search query, or click "Pull Live Feeds" to fetch fresh items from GitHub and Hacker News.</p>
+        <button
+          id="emptyResetBtn"
+          type="button"
+          class="mt-4 px-3.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition"
+        >
+          Show All Items
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal 1: Sources Registry & Supabase Connection Manager -->
+  <div id="sourcesModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Automated Data Sources &amp; Database Connection</h2>
+          <p class="text-xs text-slate-400">Add new YouTube channels, GitHub topics, or RSS feeds and configure your Supabase backend</p>
+        </div>
+        <button id="closeSourcesModalBtn" type="button" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto custom-scrollbar space-y-6">
+        <!-- Add New Source Form -->
+        <form id="addSourceForm" class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Add New Automated Source</h3>
+            <span class="text-[11px] text-slate-400">Syncs with <code class="text-slate-300 font-mono">sources</code> table</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" for="srcNameInput">Source Display Name</label>
+              <input
+                id="srcNameInput"
+                type="text"
+                required
+                placeholder="e.g. AI Explained (YouTube)"
+                class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" for="srcCategorySelect">Track Category</label>
+              <select
+                id="srcCategorySelect"
+                class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+              >
+                <option value="paper">Research Papers</option>
+                <option value="github">GitHub AI Tools</option>
+                <option value="youtube">YouTube Videos</option>
+                <option value="news">AI News &amp; Blogs</option>
+                <option value="project">Innovative Projects</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" for="srcDriverSelect">Ingestion Driver</label>
+              <select
+                id="srcDriverSelect"
+                class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+              >
+                <option value="youtube_rss">youtube_rss (Channel XML Feed)</option>
+                <option value="github_api">github_api (Repo Topic/Search)</option>
+                <option value="arxiv_api">arxiv_api (arXiv Query)</option>
+                <option value="hf_papers_api">hf_papers_api (Hugging Face Papers)</option>
+                <option value="hn_algolia_api">hn_algolia_api (Hacker News Query)</option>
+                <option value="rss_feed">rss_feed (Standard RSS/Atom URL)</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input
+              id="srcQueryInput"
+              type="text"
+              required
+              placeholder="Paste RSS URL, YouTube channel_id URL, or GitHub/arXiv search query..."
+              class="flex-1 px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500"
+            />
+            <button
+              type="submit"
+              class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition shrink-0"
+            >
+              + Register Source
+            </button>
+          </div>
+        </form>
+
+        <!-- Active Sources List -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Configured Ingestion Sources</h3>
+            <span id="sourcesCountLabel" class="text-xs text-slate-400"></span>
+          </div>
+          <div id="sourcesListContainer" class="space-y-2">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Optional Supabase Cloud Connection -->
+        <form id="supabaseConfigForm" class="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xs font-semibold uppercase tracking-wider text-cyan-400">Optional Supabase Cloud Sync</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Connect directly to the <code class="font-mono text-slate-300">items</code> and <code class="font-mono text-slate-300">sources</code> tables created by <code class="font-mono text-slate-300">schema.sql</code></p>
+            </div>
+            <button
+              id="disconnectSupabaseBtn"
+              type="button"
+              class="text-xs text-slate-400 hover:text-rose-400 underline"
+            >
+              Clear Credentials
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" for="sbUrlInput">SUPABASE_URL</label>
+              <input
+                id="sbUrlInput"
+                type="url"
+                placeholder="https://your-project-ref.supabase.co"
+                class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1" for="sbKeyInput">SUPABASE_PUBLISHABLE_KEY (or legacy ANON_KEY)</label>
+              <input
+                id="sbKeyInput"
+                type="password"
+                placeholder="sb_publishable_..."
+                class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button
+              type="submit"
+              class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition"
+            >
+              Save &amp; Sync Supabase
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Log Custom AI Item -->
+  <div id="addItemModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-white">Log Custom AI Paper, Tool, or Video</h2>
+          <p class="text-xs text-slate-400">Add a discovery directly to your personal hub with an actionable takeaway</p>
+        </div>
+        <button id="closeAddItemModalBtn" type="button" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="addItemForm" class="p-5 space-y-3.5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="itemCategoryInput">Track Category</label>
+            <select
+              id="itemCategoryInput"
+              class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+            >
+              <option value="paper">Research Paper</option>
+              <option value="github">GitHub AI Tool</option>
+              <option value="youtube">YouTube Video</option>
+              <option value="news">AI News / Article</option>
+              <option value="project">Innovative Project</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="itemStatusInput">Initial Workflow Status</label>
+            <select
+              id="itemStatusInput"
+              class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+            >
+              <option value="to_test">To Test (Action Queue)</option>
+              <option value="inbox">Inbox</option>
+              <option value="applied">Applied in Workflow</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1" for="itemTitleInput">Title</label>
+          <input
+            id="itemTitleInput"
+            type="text"
+            required
+            placeholder="e.g. Qwen2.5-Coder: Technical Report or repo owner/name"
+            class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="itemUrlInput">Source URL</label>
+            <input
+              id="itemUrlInput"
+              type="url"
+              required
+              placeholder="https://..."
+              class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="itemCreatorInput">Authors / Creator</label>
+            <input
+              id="itemCreatorInput"
+              type="text"
+              placeholder="e.g. DeepMind, Andrej Karpathy, org/repo"
+              class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1" for="itemSummaryInput">Key Summary (What is new?)</label>
+          <textarea
+            id="itemSummaryInput"
+            rows="2"
+            required
+            placeholder="2-sentence overview of the paper, tool, or video..."
+            class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-indigo-500"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs text-emerald-400 mb-1" for="itemTakeawayInput">Practical Takeaway (How to use this to elevate your workflow)</label>
+          <textarea
+            id="itemTakeawayInput"
+            rows="2"
+            required
+            placeholder="e.g. Test this MCP server with Claude/Gemini for local repository indexing..."
+            class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-emerald-500/40 rounded-lg text-white focus:outline-none focus:border-emerald-400"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1" for="itemTagsInput">Capability Tags (comma-separated)</label>
+          <input
+            id="itemTagsInput"
+            type="text"
+            placeholder="agents, mcp, rag, coding, local-ai"
+            class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-white font-mono focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button
+            id="cancelAddItemBtn"
+            type="button"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white"
+          >
+            Save to Hub
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div
+    id="toastContainer"
+    class="fixed bottom-4 right-4 z-50 pointer-events-none flex flex-col gap-2 max-w-sm"
+  ></div>
+
+  <script>
+    // =========================================================================
+    // Storage Helpers (Safe localStorage wrapper for Canvas Sandbox)
+    // =========================================================================
+    const STORAGE_KEYS = {
+      ITEMS: 'nexus_ai_hub_items_v1',
+      SOURCES: 'nexus_ai_hub_sources_v1',
+      SUPABASE: 'nexus_ai_hub_supabase_v1'
+    };
+
+    function safeGetStorage(key, fallback) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        return fallback;
+      }
+    }
+
+    function safeSetStorage(key, value) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {
+        // Ignore storage quota / sandbox restrictions
+      }
+    }
+
+    function copyTextToClipboard(text, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(
+          function () { showToast(label || 'Copied to clipboard', 'emerald'); },
+          function () { fallbackCopy(text, label); }
+        );
+      } else {
+        fallbackCopy(text, label);
+      }
+    }
+
+    function fallbackCopy(text, label) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast(label || 'Copied to clipboard', 'emerald');
+      } catch (err) {
+        showToast('Unable to copy automatically', 'amber');
+      }
+      document.body.removeChild(ta);
+    }
+
+    function showToast(message, tone) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      const borderMap = {
+        emerald: 'border-emerald-500/40 bg-slate-900/95 text-emerald-200',
+        indigo: 'border-indigo-500/40 bg-slate-900/95 text-indigo-200',
+        amber: 'border-amber-500/40 bg-slate-900/95 text-amber-200'
+      };
+      el.className = 'pointer-events-auto px-3.5 py-2.5 rounded-xl border shadow-xl text-xs font-medium transition-all duration-200 ' + (borderMap[tone] || borderMap.indigo);
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(function () {
+        el.style.opacity = '0';
+        setTimeout(function () {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 220);
+      }, 2800);
+    }
+
+    // =========================================================================
+    // Pre-Seeded Sources & Initial High-Signal Feed Across All 4 Tracks
+    // =========================================================================
+    const INITIAL_SOURCES = [
+      {
+        id: 'src-hf-papers',
+        name: 'Hugging Face Daily Papers',
+        category: 'paper',
+        driver: 'hf_papers_api',
+        feed_url_or_query: 'https://huggingface.co/api/daily_papers',
+        active: true
+      },
+      {
+        id: 'src-arxiv-ai',
+        name: 'arXiv cs.AI, cs.CL & cs.LG',
+        category: 'paper',
+        driver: 'arxiv_api',
+        feed_url_or_query: 'cat:cs.AI OR cat:cs.CL OR cat:cs.LG',
+        active: true
+      },
+      {
+        id: 'src-gh-agents',
+        name: 'GitHub Trending AI Agents, MCP & RAG Tools',
+        category: 'github',
+        driver: 'github_api',
+        feed_url_or_query: 'topic:mcp OR topic:ai-agents OR topic:llm-tools',
+        active: true
+      },
+      {
+        id: 'src-yt-karpathy',
+        name: 'Andrej Karpathy (YouTube XML RSS)',
+        category: 'youtube',
+        driver: 'youtube_rss',
+        feed_url_or_query: 'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCXUPKJO5MZQN11PqgIvyuvQ',
+        active: true
+      },
+      {
+        id: 'src-yt-twomin',
+        name: 'Two Minute Papers (YouTube XML RSS)',
+        category: 'youtube',
+        driver: 'youtube_rss',
+        feed_url_or_query: 'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg',
+        active: true
+      },
+      {
+        id: 'src-yt-kilcher',
+        name: 'Yannic Kilcher (YouTube XML RSS)',
+        category: 'youtube',
+        driver: 'youtube_rss',
+        feed_url_or_query: 'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew',
+        active: true
+      },
+      {
+        id: 'src-hn-news',
+        name: 'Hacker News High-Signal AI Stories',
+        category: 'news',
+        driver: 'hn_algolia_api',
+        feed_url_or_query: 'LLM OR "AI agent" OR Anthropic OR OpenAI OR Gemini OR DeepMind',
+        active: true
+      },
+      {
+        id: 'src-hn-show',
+        name: 'Show HN: Innovative AI Projects & Launches',
+        category: 'project',
+        driver: 'hn_algolia_api',
+        feed_url_or_query: 'Show HN AI OR LLM OR Agent OR MCP',
+        active: true
+      },
+      {
+        id: 'src-rss-simonw',
+        name: 'Simon Willison Weblog (Atom Feed)',
+        category: 'news',
+        driver: 'rss_feed',
+        feed_url_or_query: 'https://simonwillison.net/atom/everything/',
+        active: true
+      }
+    ];
+
+    const INITIAL_ITEMS = [
+      {
+        external_id: 'arxiv:2610.14224',
+        category: 'paper',
+        title: 'VisionHOPE: Self-Modifying Visual Backbones with Coupled Memory Updates',
+        url: 'https://huggingface.co/papers/trending',
+        authors_or_creator: 'Hugging Face Trending Papers / arXiv',
+        published_at: '2026-10-18T14:20:00Z',
+        ai_summary: 'Introduces a self-modifying visual architecture where long-term and working memory co-evolve during inference with stability-controlled updates. Demonstrates stronger multi-step spatial reasoning on long-context multimodal tasks without full retraining.',
+        practical_takeaway: 'Use coupled memory state summaries when chaining multimodal vision-language calls over multi-page documents or video frames to prevent context drift.',
+        tags: ['multimodal', 'agents', 'prompting'],
+        metrics: { upvotes: 142, source: 'HF Papers' },
+        status: 'to_test',
+        is_bookmarked: true,
+        personal_notes: 'Test state-summary carryover pattern in my multi-page PDF analysis prompts.'
+      },
+      {
+        external_id: 'gh:mcp-servers-collection',
+        category: 'github',
+        title: 'modelcontextprotocol / servers — Official & Community MCP Tool Servers',
+        url: 'https://mcpservers.org/agent-skills/huggingface/huggingface-papers',
+        authors_or_creator: 'modelcontextprotocol',
+        published_at: '2026-10-18T11:05:00Z',
+        ai_summary: 'Reference implementations and community Model Context Protocol (MCP) servers enabling AI agents to directly query local filesystems, Git repositories, PostgreSQL databases, and Hugging Face paper pages in Markdown.',
+        practical_takeaway: 'Connect the Hugging Face Papers and local SQLite MCP servers to your desktop coding agent so it can pull live arXiv specs directly into your IDE.',
+        tags: ['mcp', 'agents', 'coding'],
+        metrics: { stars: 1840, forks: 290, language: 'TypeScript' },
+        status: 'applied',
+        is_bookmarked: true,
+        personal_notes: 'Configured huggingface-papers skill for direct markdown paper lookups.'
+      },
+      {
+        external_id: 'yt:karpathy-llm-os',
+        category: 'youtube',
+        title: 'Deep Dive into LLMs, Tool Use, and Autonomous Coding Workflows',
+        url: 'https://www.youtube.com/watch?v=zjkBMFhNj_g',
+        authors_or_creator: 'Andrej Karpathy',
+        published_at: '2026-10-17T18:30:00Z',
+        ai_summary: 'Walks through the full stack of modern LLM post-training, reinforcement learning for reasoning verification, and how to structure context windows for high-reliability code generation and research synthesis.',
+        practical_takeaway: 'Structure complex engineering tasks by feeding explicit schema definitions and verification scripts into the context window before asking the model to write implementation code.',
+        tags: ['coding', 'prompting', 'agents', 'fine-tuning'],
+        metrics: { views: 245000, source: 'YouTube RSS' },
+        status: 'to_test',
+        is_bookmarked: false,
+        personal_notes: ''
+      },
+      {
+        external_id: 'paper:hf-papers-for-agents',
+        category: 'paper',
+        title: 'Structured Markdown Paper Indexing & Retrieval for Autonomous Research Agents',
+        url: 'https://huggingface.co/changelog/papers-for-agents',
+        authors_or_creator: 'Hugging Face Research Team',
+        published_at: '2026-10-17T09:15:00Z',
+        ai_summary: 'Details how exposing arXiv papers as clean Markdown endpoints (.md) alongside structured JSON metadata dramatically reduces token overhead and hallucination rates compared to raw PDF parsing.',
+        practical_takeaway: 'Append .md or query the Hugging Face Paper Pages API when feeding research papers into your LLM workflows instead of copy-pasting raw PDF text.',
+        tags: ['rag', 'agents', 'prompting'],
+        metrics: { upvotes: 96, source: 'HF Hub' },
+        status: 'applied',
+        is_bookmarked: true,
+        personal_notes: 'Switched my paper reading pipeline to pull clean markdown representations.'
+      },
+      {
+        external_id: 'gh:local-rag-eval-harness',
+        category: 'github',
+        title: 'rag-eval-lite / hybrid-chunker — Late-Interaction & Hybrid BM25 + Vector Retrieval Toolkit',
+        url: 'https://docs.github.com/en/rest',
+        authors_or_creator: 'open-ai-tools',
+        published_at: '2026-10-16T21:40:00Z',
+        ai_summary: 'Lightweight Python library combining PostgreSQL full-text tsvector search with dense embeddings and reciprocal rank fusion (RRF) for personal knowledge bases.',
+        practical_takeaway: 'Pair PostgreSQL tsvector full-text indexes with semantic embeddings to catch exact API identifiers and model names that pure vector search misses.',
+        tags: ['rag', 'local-ai', 'coding'],
+        metrics: { stars: 615, forks: 54, language: 'Python' },
+        status: 'inbox',
+        is_bookmarked: false,
+        personal_notes: ''
+      },
+      {
+        external_id: 'news:gemini-interactions-api',
+        category: 'news',
+        title: 'Gemini API Structured Outputs & Multi-Tool Orchestration Patterns',
+        url: 'https://ai.google.dev/gemini-api/docs',
+        authors_or_creator: 'Google AI for Developers',
+        published_at: '2026-10-16T15:00:00Z',
+        ai_summary: 'Covers low-latency JSON schema enforcement, batch enrichment pipelines, and parallel function calling for automated background agents using Gemini 2.5 Flash and Pro.',
+        practical_takeaway: 'Use responseMimeType: "application/json" with temperature 0.2 in background ingestion scripts to guarantee deterministic tag and summary extraction.',
+        tags: ['agents', 'prompting', 'coding'],
+        metrics: { points: 218, comments: 64 },
+        status: 'inbox',
+        is_bookmarked: false,
+        personal_notes: ''
+      },
+      {
+        external_id: 'project:show-hn-agent-sandbox',
+        category: 'project',
+        title: 'Show HN: Zero-Server Personal AI Research Digest with GitHub Actions & Supabase',
+        url: 'https://hn.algolia.com/api',
+        authors_or_creator: 'hn_builder',
+        published_at: '2026-10-15T20:10:00Z',
+        ai_summary: 'An open architecture demonstrating how scheduled GitHub Actions workflows can poll arXiv, GitHub REST API, YouTube RSS feeds, and Algolia HN Search every 6 hours at zero hosting cost.',
+        practical_takeaway: 'Run stateless cron scrapers on GitHub Actions and store deduplicated records in Supabase so your personal dashboard loads instantaneously.',
+        tags: ['agents', 'local-ai', 'coding'],
+        metrics: { points: 164, comments: 49 },
+        status: 'to_test',
+        is_bookmarked: false,
+        personal_notes: ''
+      },
+      {
+        external_id: 'yt:twominpapers-simulation',
+        category: 'youtube',
+        title: 'New Neural Physics & Real-Time World Models Explained',
+        url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        authors_or_creator: 'Two Minute Papers',
+        published_at: '2026-10-15T13:00:00Z',
+        ai_summary: 'Visualizes recent breakthroughs in real-time generative world models capable of simulating consistent 3D physics and interactive environments at 60 FPS.',
+        practical_takeaway: 'Use visual benchmark comparisons from paper companion pages to quickly judge whether a new multimodal architecture generalizes beyond static benchmarks.',
+        tags: ['multimodal', 'local-ai'],
+        metrics: { views: 118000, source: 'YouTube RSS' },
+        status: 'inbox',
+        is_bookmarked: false,
+        personal_notes: ''
+      }
+    ];
+
+    // =========================================================================
+    // Application State
+    // =========================================================================
+    const state = {
+      items: safeGetStorage(STORAGE_KEYS.ITEMS, INITIAL_ITEMS),
+      sources: safeGetStorage(STORAGE_KEYS.SOURCES, INITIAL_SOURCES),
+      supabase: safeGetStorage(STORAGE_KEYS.SUPABASE, { url: '', key: '' }),
+      activeView: 'all',        // 'all' | 'paper' | 'github' | 'youtube' | 'news' | 'project' | 'to_test' | 'applied' | 'bookmarked'
+      activeTag: 'all',         // 'all' or tag string
+      searchQuery: '',
+      hideArchived: true,
+      sortBy: 'signal',         // 'signal' | 'newest' | 'action'
+      expandedNotesId: null,
+      isSyncing: false
+    };
+
+    const VIEW_DEFINITIONS = [
+      { id: 'all', label: 'All Tracks', icon: '⚡' },
+      { id: 'paper', label: 'Papers', icon: '📄' },
+      { id: 'github', label: 'GitHub Tools', icon: '🛠️' },
+      { id: 'youtube', label: 'YouTube', icon: '▶️' },
+      { id: 'news', label: 'AI News', icon: '📰' },
+      { id: 'project', label: 'Projects', icon: '🚀' },
+      { id: 'to_test', label: 'To Test Queue', icon: '🧪' },
+      { id: 'applied', label: 'Applied', icon: '✅' },
+      { id: 'bookmarked', label: 'Bookmarked', icon: '🔖' }
+    ];
+
+    const CAPABILITY_TAGS = [
+      'all',
+      'agents',
+      'mcp',
+      'rag',
+      'coding',
+      'prompting',
+      'multimodal',
+      'fine-tuning',
+      'local-ai'
+    ];
+
+    const CATEGORY_STYLES = {
+      paper: {
+        badge: 'bg-violet-500/15 text-violet-300 border-violet-500/30',
+        label: 'Research Paper'
+      },
+      github: {
+        badge: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+        label: 'GitHub Tool'
+      },
+      youtube: {
+        badge: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+        label: 'YouTube Video'
+      },
+      news: {
+        badge: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+        label: 'AI News'
+      },
+      project: {
+        badge: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+        label: 'Innovative Project'
+      }
+    };
+
+    const STATUS_STYLES = {
+      inbox: {
+        label: 'Inbox',
+        classes: 'bg-slate-800 text-slate-300 border-slate-700 hover:border-slate-500'
+      },
+      to_test: {
+        label: '🧪 To Test',
+        classes: 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+      },
+      applied: {
+        label: '✅ Applied',
+        classes: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+      },
+      archived: {
+        label: 'Archived',
+        classes: 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'
+      }
+    };
+
+    // =========================================================================
+    // Helper Calculations
+    // =========================================================================
+    function getItemSignalScore(item) {
+      const m = item.metrics || {};
+      return (
+        (Number(m.upvotes) || 0) * 3 +
+        (Number(m.stars) || 0) * 0.25 +
+        (Number(m.points) || 0) * 2 +
+        (Number(m.views) || 0) * 0.001
+      );
+    }
+
+    function formatRelativeDate(isoStr) {
+      if (!isoStr) return 'Recently';
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return 'Recently';
+      const diffMs = Date.now() - d.getTime();
+      const diffHours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+      if (diffHours < 24) return diffHours + 'h ago';
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays < 30) return diffDays + 'd ago';
+      return d.toISOString().slice(0, 10);
+    }
+
+    function formatMetricPills(item) {
+      const m = item.metrics || {};
+      const pills = [];
+      if (m.upvotes) pills.push('▲ ' + m.upvotes + ' upvotes');
+      if (m.stars) pills.push('★ ' + Number(m.stars).toLocaleString() + ' stars');
+      if (m.forks) pills.push('⑂ ' + m.forks + ' forks');
+      if (m.points) pills.push('▲ ' + m.points + ' HN pts');
+      if (m.comments) pills.push('💬 ' + m.comments);
+      if (m.views) pills.push('👁 ' + Number(m.views).toLocaleString() + ' views');
+      if (m.language) pills.push(m.language);
+      return pills;
+    }
+
+    function getFilteredItems() {
+      const q = state.searchQuery.trim().toLowerCase();
+
+      const filtered = state.items.filter(function (item) {
+        if (state.hideArchived && item.status === 'archived') {
+          return false;
+        }
+        if (state.activeView === 'to_test' && item.status !== 'to_test') return false;
+        if (state.activeView === 'applied' && item.status !== 'applied') return false;
+        if (state.activeView === 'bookmarked' && !item.is_bookmarked) return false;
+        if (
+          ['paper', 'github', 'youtube', 'news', 'project'].indexOf(state.activeView) !== -1 &&
+          item.category !== state.activeView
+        ) {
+          return false;
+        }
+        if (state.activeTag !== 'all') {
+          const itemTags = (item.tags || []).map(function (t) { return t.toLowerCase(); });
+          if (itemTags.indexOf(state.activeTag) === -1) return false;
+        }
+        if (q) {
+          const haystack = [
+            item.title,
+            item.authors_or_creator,
+            item.ai_summary,
+            item.practical_takeaway,
+            item.personal_notes,
+            (item.tags || []).join(' ')
+          ]
+            .join(' ')
+            .toLowerCase();
+          if (haystack.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+
+      filtered.sort(function (a, b) {
+        if (state.sortBy === 'newest') {
+          return new Date(b.published_at).getTime() - new Date(a.published_at).getTime();
+        }
+        if (state.sortBy === 'action') {
+          const rank = { to_test: 3, applied: 2, inbox: 1, archived: 0 };
+          const diff = (rank[b.status] || 0) - (rank[a.status] || 0);
+          if (diff !== 0) return diff;
+        }
+        return getItemSignalScore(b) - getItemSignalScore(a);
+      });
+
+      return filtered;
+    }
+
+    // =========================================================================
+    // Rendering Functions
+    // =========================================================================
+    function renderKPIs() {
+      document.getElementById('statTotalCount').textContent = String(state.items.length);
+      document.getElementById('statToTestCount').textContent = String(
+        state.items.filter(function (i) { return i.status === 'to_test'; }).length
+      );
+      document.getElementById('statAppliedCount').textContent = String(
+        state.items.filter(function (i) { return i.status === 'applied'; }).length
+      );
+      document.getElementById('statBookmarkedCount').textContent = String(
+        state.items.filter(function (i) { return i.is_bookmarked; }).length
+      );
+
+      const badge = document.getElementById('connectionBadge');
+      if (state.supabase && state.supabase.url && state.supabase.key) {
+        badge.textContent = 'Supabase Connected';
+        badge.className = 'text-[11px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30';
+      } else {
+        badge.textContent = 'Local + Live API Mode';
+        badge.className = 'text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+      }
+    }
+
+    function countForView(viewId) {
+      return state.items.filter(function (item) {
+        if (state.hideArchived && item.status === 'archived') return false;
+        if (viewId === 'all') return true;
+        if (viewId === 'to_test') return item.status === 'to_test';
+        if (viewId === 'applied') return item.status === 'applied';
+        if (viewId === 'bookmarked') return Boolean(item.is_bookmarked);
+        return item.category === viewId;
+      }).length;
+    }
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = '';
+
+      VIEW_DEFINITIONS.forEach(function (view) {
+        const isActive = state.activeView === view.id;
+        const count = countForView(view.id);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className =
+          'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition ' +
+          (isActive
+            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30'
+            : 'bg-slate-800/75 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/60');
+        btn.innerHTML =
+          '<span>' +
+          view.icon +
+          '</span><span>' +
+          view.label +
+          '</span><span class="px-1.5 py-0.2 rounded-md text-[10px] font-mono ' +
+          (isActive ? 'bg-indigo-800/80 text-indigo-100' : 'bg-slate-900/80 text-slate-400') +
+          '">' +
+          count +
+          '</span>';
+        btn.addEventListener('click', function () {
+          state.activeView = view.id;
+          renderAll();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderTagBar() {
+      const container = document.getElementById('tagFilterBar');
+      container.innerHTML = '';
+
+      CAPABILITY_TAGS.forEach(function (tag) {
+        const isActive = state.activeTag === tag;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className =
+          'px-2.5 py-1 rounded-lg text-xs font-mono transition whitespace-nowrap ' +
+          (isActive
+            ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/50 font-semibold'
+            : 'bg-slate-950/70 text-slate-400 border border-slate-800 hover:border-slate-700 hover:text-slate-200');
+        btn.textContent = tag === 'all' ? 'all-tags' : '#' + tag;
+        btn.addEventListener('click', function () {
+          state.activeTag = tag;
+          renderAll();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function cycleStatus(current) {
+      const order = ['inbox', 'to_test', 'applied', 'archived'];
+      const idx = order.indexOf(current);
+      return order[(idx + 1) % order.length];
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderFeedGrid() {
+      const grid = document.getElementById('feedGrid');
+      const emptyState = document.getElementById('emptyState');
+      const summaryText = document.getElementById('resultsSummaryText');
+      const resetBtn = document.getElementById('resetFiltersBtn');
+
+      const filtered = getFilteredItems();
+      const hasActiveFilters =
+        state.activeView !== 'all' ||
+        state.activeTag !== 'all' ||
+        state.searchQuery.trim() !== '';
+
+      resetBtn.classList.toggle('hidden', !hasActiveFilters);
+      summaryText.textContent =
+        'Showing ' +
+        filtered.length +
+        ' of ' +
+        state.items.length +
+        ' tracked items' +
+        (state.activeTag !== 'all' ? ' tagged #' + state.activeTag : '');
+
+      grid.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      filtered.forEach(function (item) {
+        const catStyle = CATEGORY_STYLES[item.category] || CATEGORY_STYLES.news;
+        const statusStyle = STATUS_STYLES[item.status] || STATUS_STYLES.inbox;
+        const metricPills = formatMetricPills(item);
+        const isNotesOpen = state.expandedNotesId === item.external_id;
+        const hasNotes = Boolean(item.personal_notes && item.personal_notes.trim());
+
+        const card = document.createElement('article');
+        card.className =
+          'bg-slate-900/90 border border-slate-800/90 hover:border-slate-700 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3.5 transition shadow-lg shadow-slate-950/50';
+
+        const tagsHtml = (item.tags || [])
+          .map(function (t) {
+            return (
+              '<button type="button" data-tag-click="' +
+              escapeHtml(t) +
+              '" class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-slate-950 text-slate-300 border border-slate-800 hover:border-cyan-500/40 hover:text-cyan-300 transition">#' +
+              escapeHtml(t) +
+              '</button>'
+            );
+          })
+          .join('');
+
+        const metricsHtml = metricPills
+          .map(function (m) {
+            return (
+              '<span class="text-[11px] font-mono px-2 py-0.5 rounded-md bg-slate-950/90 text-slate-300 border border-slate-800/90">' +
+              escapeHtml(m) +
+              '</span>'
+            );
+          })
+          .join('');
+
+        card.innerHTML =
+          '<div class="space-y-3">' +
+          '  <div class="flex items-center justify-between gap-2 flex-wrap">' +
+          '    <div class="flex items-center gap-2 flex-wrap">' +
+          '      <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ' +
+          catStyle.badge +
+          '">' +
+          catStyle.label +
+          '</span>' +
+          '      <span class="text-xs text-slate-400 font-medium">' +
+          escapeHtml(item.authors_or_creator) +
+          '</span>' +
+          '      <span class="text-xs text-slate-500">• ' +
+          escapeHtml(formatRelativeDate(item.published_at)) +
+          '</span>' +
+          '    </div>' +
+          '    <div class="flex items-center gap-1.5">' +
+          '      <button type="button" data-action="cycle-status" class="text-xs font-medium px-2.5 py-1 rounded-lg border transition ' +
+          statusStyle.classes +
+          '" title="Click to cycle workflow status (Inbox → To Test → Applied → Archived)">' +
+          statusStyle.label +
+          '      </button>' +
+          '      <button type="button" data-action="toggle-bookmark" class="p-1.5 rounded-lg border transition ' +
+          (item.is_bookmarked
+            ? 'bg-pink-500/20 border-pink-500/40 text-pink-300'
+            : 'bg-slate-800/80 border-slate-700 text-slate-400 hover:text-slate-200') +
+          '" title="Bookmark item">' +
+          '        <svg class="w-4 h-4" fill="' +
+          (item.is_bookmarked ? 'currentColor' : 'none') +
+          '" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>' +
+          '      </button>' +
+          '    </div>' +
+          '  </div>' +
+          '  <div>' +
+          '    <a href="' +
+          escapeHtml(item.url) +
+          '" target="_blank" rel="noopener noreferrer" class="text-base font-bold text-white hover:text-indigo-300 transition inline-flex items-start gap-1.5 group">' +
+          '      <span>' +
+          escapeHtml(item.title) +
+          '</span>' +
+          '      <svg class="w-4 h-4 text-slate-500 group-hover:text-indigo-400 shrink-0 mt-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>' +
+          '    </a>' +
+          '    <p class="text-xs sm:text-sm text-slate-300 mt-1.5 leading-relaxed">' +
+          escapeHtml(item.ai_summary) +
+          '</p>' +
+          '  </div>' +
+          '  <div class="p-3 rounded-xl bg-indigo-950/35 border border-indigo-500/25">' +
+          '    <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-indigo-300 mb-1">' +
+          '      <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>' +
+          '      <span>How to Use This to Elevate Your Workflow</span>' +
+          '    </div>' +
+          '    <p class="text-xs text-indigo-100/90 leading-relaxed">' +
+          escapeHtml(item.practical_takeaway) +
+          '</p>' +
+          '  </div>' +
+          '</div>' +
+          '<div class="space-y-2.5 pt-1 border-t border-slate-800/80">' +
+          '  <div class="flex items-center justify-between gap-2 flex-wrap">' +
+          '    <div class="flex items-center gap-1.5 flex-wrap">' +
+          tagsHtml +
+          metricsHtml +
+          '    </div>' +
+          '    <div class="flex items-center gap-1.5 ml-auto">' +
+          '      <button type="button" data-action="toggle-notes" class="text-xs px-2.5 py-1 rounded-lg border transition ' +
+          (hasNotes
+            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+            : 'bg-slate-800/70 border-slate-700/80 text-slate-300 hover:text-white') +
+          '">' +
+          (hasNotes ? '📝 View/Edit Notes' : '+ Add Lab Note') +
+          '      </button>' +
+          '      <button type="button" data-action="copy-url" class="text-xs px-2 py-1 rounded-lg bg-slate-800/70 hover:bg-slate-800 text-slate-300 border border-slate-700/80" title="Copy direct source URL">' +
+          '        Copy URL' +
+          '      </button>' +
+          '    </div>' +
+          '  </div>' +
+          (isNotesOpen || hasNotes
+            ? '<div class="' +
+              (isNotesOpen ? 'block' : 'hidden') +
+              ' pt-2 space-y-2">' +
+              '  <label class="block text-[11px] font-mono text-slate-400">Personal Experiment &amp; Workflow Notes:</label>' +
+              '  <textarea data-notes-input="true" rows="2" placeholder="Jot down prompts, repo test results, or integration ideas..." class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-700 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500">' +
+              escapeHtml(item.personal_notes || '') +
+              '</textarea>' +
+              '  <div class="flex justify-end">' +
+              '    <button type="button" data-action="save-notes" class="px-3 py-1 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white">Save Note</button>' +
+              '  </div>' +
+              '</div>'
+            : '') +
+          '</div>';
+
+        // Event bindings on the card
+        card.querySelector('[data-action="cycle-status"]').addEventListener('click', function () {
+          item.status = cycleStatus(item.status);
+          persistItems();
+          syncSupabaseItemFields(item.external_id, { status: item.status });
+          showToast('Moved "' + item.title.slice(0, 32) + '..." to ' + STATUS_STYLES[item.status].label, 'indigo');
+          renderAll();
+        });
+
+        card.querySelector('[data-action="toggle-bookmark"]').addEventListener('click', function () {
+          item.is_bookmarked = !item.is_bookmarked;
+          persistItems();
+          syncSupabaseItemFields(item.external_id, { is_bookmarked: item.is_bookmarked });
+          renderAll();
+        });
+
+        card.querySelector('[data-action="copy-url"]').addEventListener('click', function () {
+          copyTextToClipboard(item.url, 'Copied URL to clipboard');
+        });
+
+        card.querySelector('[data-action="toggle-notes"]').addEventListener('click', function () {
+          state.expandedNotesId =
+            state.expandedNotesId === item.external_id ? null : item.external_id;
+          renderFeedGrid();
+        });
+
+        const saveNoteBtn = card.querySelector('[data-action="save-notes"]');
+        if (saveNoteBtn) {
+          saveNoteBtn.addEventListener('click', function () {
+            const textarea = card.querySelector('[data-notes-input="true"]');
+            item.personal_notes = textarea ? textarea.value : '';
+            state.expandedNotesId = null;
+            persistItems();
+            syncSupabaseItemFields(item.external_id, { personal_notes: item.personal_notes });
+            showToast('Saved personal workflow note', 'emerald');
+            renderAll();
+          });
+        }
+
+        card.querySelectorAll('[data-tag-click]').forEach(function (tagBtn) {
+          tagBtn.addEventListener('click', function () {
+            const clickedTag = tagBtn.getAttribute('data-tag-click');
+            state.activeTag = state.activeTag === clickedTag ? 'all' : clickedTag;
+            renderAll();
+          });
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function renderSourcesModalList() {
+      const container = document.getElementById('sourcesListContainer');
+      const countLabel = document.getElementById('sourcesCountLabel');
+      countLabel.textContent = state.sources.length + ' registered feeds';
+      container.innerHTML = '';
+
+      state.sources.forEach(function (src) {
+        const row = document.createElement('div');
+        row.className =
+          'p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-2';
+
+        const cliCommand =
+          'python3 ingest_ai_hub.py --add-source --only-add-source --name "' +
+          src.name.replace(/"/g, '\\"') +
+          '" --category ' +
+          src.category +
+          ' --driver ' +
+          src.driver +
+          ' --query "' +
+          src.feed_url_or_query.replace(/"/g, '\\"') +
+          '"';
+
+        row.innerHTML =
+          '<div class="min-w-0 flex-1">' +
+          '  <div class="flex items-center gap-2 flex-wrap">' +
+          '    <span class="text-xs font-semibold text-white">' +
+          escapeHtml(src.name) +
+          '</span>' +
+          '    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-indigo-300 border border-slate-700">' +
+          escapeHtml(src.category) +
+          ' / ' +
+          escapeHtml(src.driver) +
+          '</span>' +
+          '  </div>' +
+          '  <p class="text-[11px] font-mono text-slate-400 truncate mt-0.5">' +
+          escapeHtml(src.feed_url_or_query) +
+          '</p>' +
+          '</div>' +
+          '<div class="flex items-center gap-1.5 shrink-0">' +
+          '  <button type="button" data-src-action="copy-cli" class="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Copy ingest_ai_hub.py CLI command">' +
+          '    Copy CLI' +
+          '  </button>' +
+          '  <button type="button" data-src-action="toggle-active" class="px-2.5 py-1 rounded-lg text-[11px] font-medium border ' +
+          (src.active
+            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+            : 'bg-slate-800 border-slate-700 text-slate-400') +
+          '">' +
+          (src.active ? 'Active' : 'Paused') +
+          '  </button>' +
+          '  <button type="button" data-src-action="delete" class="p-1 rounded-lg text-slate-500 hover:text-rose-400" title="Remove source">' +
+          '    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+          '  </button>' +
+          '</div>';
+
+        row.querySelector('[data-src-action="copy-cli"]').addEventListener('click', function () {
+          copyTextToClipboard(cliCommand, 'Copied ingest_ai_hub.py CLI command');
+        });
+
+        row.querySelector('[data-src-action="toggle-active"]').addEventListener('click', function () {
+          src.active = !src.active;
+          safeSetStorage(STORAGE_KEYS.SOURCES, state.sources);
+          syncSupabaseSourceToggle(src);
+          renderSourcesModalList();
+        });
+
+        row.querySelector('[data-src-action="delete"]').addEventListener('click', function () {
+          state.sources = state.sources.filter(function (s) { return s.id !== src.id; });
+          safeSetStorage(STORAGE_KEYS.SOURCES, state.sources);
+          syncSupabaseSourceDelete(src);
+          renderSourcesModalList();
+          showToast('Removed source "' + src.name + '"', 'amber');
+        });
+
+        container.appendChild(row);
+      });
+    }
+
+    function persistItems() {
+      safeSetStorage(STORAGE_KEYS.ITEMS, state.items);
+    }
+
+    // =========================================================================
+    // Two-Way Supabase Cloud Sync Helpers
+    // =========================================================================
+    function isSupabaseConfigured() {
+      return Boolean(state.supabase && state.supabase.url && state.supabase.key);
+    }
+
+    function getSupabaseHeaders(extra) {
+      const key = (state.supabase && state.supabase.key) || '';
+      const baseHeaders = {
+        apikey: key,
+        'Content-Type': 'application/json'
+      };
+      // Legacy JWT anon keys use Authorization: Bearer; modern sb_publishable_ keys
+      // are passed strictly via the `apikey` header.
+      if (key && key.indexOf('sb_') !== 0) {
+        baseHeaders.Authorization = 'Bearer ' + key;
+      }
+      return Object.assign(baseHeaders, extra || {});
+    }
+
+    async function syncSupabaseItemFields(externalId, fields) {
+      if (!isSupabaseConfigured() || !externalId) return;
+      try {
+        const base = state.supabase.url.replace(/\/$/, '');
+        const url = base + '/rest/v1/items?external_id=eq.' + encodeURIComponent(externalId);
+        await fetch(url, {
+          method: 'PATCH',
+          headers: getSupabaseHeaders(),
+          body: JSON.stringify(fields)
+        });
+      } catch (e) {
+        // Ignore network error; persisted in localStorage
+      }
+    }
+
+    async function syncSupabaseCreateItem(item) {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const base = state.supabase.url.replace(/\/$/, '');
+        const url = base + '/rest/v1/items?on_conflict=external_id';
+        await fetch(url, {
+          method: 'POST',
+          headers: getSupabaseHeaders({ Prefer: 'resolution=merge-duplicates' }),
+          body: JSON.stringify({
+            external_id: item.external_id,
+            category: item.category,
+            title: item.title,
+            url: item.url,
+            authors_or_creator: item.authors_or_creator,
+            published_at: item.published_at,
+            raw_summary: item.ai_summary,
+            ai_summary: item.ai_summary,
+            practical_takeaway: item.practical_takeaway,
+            tags: item.tags,
+            metrics: item.metrics || {},
+            status: item.status,
+            is_bookmarked: Boolean(item.is_bookmarked),
+            personal_notes: item.personal_notes || ''
+          })
+        });
+      } catch (e) {
+        // Ignore network error; persisted in localStorage
+      }
+    }
+
+    async function syncSupabaseAddSource(src) {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const base = state.supabase.url.replace(/\/$/, '');
+        const url = base + '/rest/v1/sources?on_conflict=feed_url_or_query';
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: getSupabaseHeaders({ Prefer: 'resolution=merge-duplicates,return=representation' }),
+          body: JSON.stringify({
+            name: src.name,
+            category: src.category,
+            driver: src.driver,
+            feed_url_or_query: src.feed_url_or_query,
+            active: Boolean(src.active)
+          })
+        });
+        if (resp.ok) {
+          const rows = await resp.json();
+          if (rows && rows[0] && rows[0].id) {
+            src.id = rows[0].id;
+            safeSetStorage(STORAGE_KEYS.SOURCES, state.sources);
+          }
+        }
+      } catch (e) {
+        // Ignore network error; persisted in localStorage
+      }
+    }
+
+    async function syncSupabaseSourceToggle(src) {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const base = state.supabase.url.replace(/\/$/, '');
+        const url = base + '/rest/v1/sources?feed_url_or_query=eq.' + encodeURIComponent(src.feed_url_or_query);
+        await fetch(url, {
+          method: 'PATCH',
+          headers: getSupabaseHeaders(),
+          body: JSON.stringify({ active: Boolean(src.active) })
+        });
+      } catch (e) {
+        // Ignore network error
+      }
+    }
+
+    async function syncSupabaseSourceDelete(src) {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const base = state.supabase.url.replace(/\/$/, '');
+        const url = base + '/rest/v1/sources?feed_url_or_query=eq.' + encodeURIComponent(src.feed_url_or_query);
+        await fetch(url, {
+          method: 'DELETE',
+          headers: getSupabaseHeaders()
+        });
+      } catch (e) {
+        // Ignore network error
+      }
+    }
+
+    function renderAll() {
+      renderKPIs();
+      renderCategoryTabs();
+      renderTagBar();
+      renderFeedGrid();
+    }
+
+    // =========================================================================
+    // Live Browser Feed Fetching (Hacker News Algolia + GitHub + Optional Supabase)
+    // =========================================================================
+    function inferTagsFromText(text, fallbackCategory) {
+      const lower = (text || '').toLowerCase();
+      const rules = {
+        agents: ['agent', 'agentic', 'multi-agent', 'autonomous'],
+        mcp: ['mcp', 'model context protocol'],
+        rag: ['rag', 'retrieval', 'vector', 'embedding'],
+        'fine-tuning': ['fine-tun', 'lora', 'rlhf', 'post-training'],
+        coding: ['code', 'coding', 'ide', 'cursor', 'copilot', 'sdk'],
+        multimodal: ['vision', 'audio', 'video', 'image', 'multimodal'],
+        'local-ai': ['ollama', 'gguf', 'llama.cpp', 'local', 'on-device'],
+        prompting: ['prompt', 'reasoning', 'eval', 'benchmark']
+      };
+      const tags = [];
+      Object.keys(rules).forEach(function (tag) {
+        if (rules[tag].some(function (kw) { return lower.indexOf(kw) !== -1; })) {
+          tags.push(tag);
+        }
+      });
+      if (tags.length === 0) tags.push(fallbackCategory || 'agents');
+      return tags.slice(0, 4);
+    }
+
+    async function pullLiveFeeds() {
+      if (state.isSyncing) return;
+      state.isSyncing = true;
+      const syncBtnLabel = document.getElementById('syncBtnLabel');
+      const syncIcon = document.getElementById('syncIcon');
+      syncBtnLabel.textContent = 'Syncing...';
+      syncIcon.classList.add('animate-spin');
+
+      let addedCount = 0;
+      const existingById = new Map();
+      state.items.forEach(function (i) {
+        existingById.set(i.external_id, i);
+      });
+
+      try {
+        // 1. If Supabase credentials are configured, pull items and sources from Supabase REST API
+        if (isSupabaseConfigured()) {
+          const base = state.supabase.url.replace(/\/$/, '');
+          const sbEndpoint = base + '/rest/v1/items?select=*&order=published_at.desc&limit=100';
+          const sbResp = await fetch(sbEndpoint, {
+            headers: getSupabaseHeaders()
+          });
+          if (sbResp.ok) {
+            const sbItems = await sbResp.json();
+            sbItems.forEach(function (row) {
+              const existing = existingById.get(row.external_id);
+              if (!existing) {
+                state.items.unshift(row);
+                existingById.set(row.external_id, row);
+                addedCount++;
+              } else {
+                existing.metrics = row.metrics || existing.metrics;
+                existing.status = row.status || existing.status;
+                existing.is_bookmarked = Boolean(row.is_bookmarked);
+                existing.personal_notes = row.personal_notes !== undefined ? row.personal_notes : existing.personal_notes;
+                if (row.ai_summary) existing.ai_summary = row.ai_summary;
+                if (row.practical_takeaway) existing.practical_takeaway = row.practical_takeaway;
+              }
+            });
+          }
+
+          const sbSourcesEndpoint = base + '/rest/v1/sources?select=*&order=created_at.asc';
+          const sbSourcesResp = await fetch(sbSourcesEndpoint, {
+            headers: getSupabaseHeaders()
+          });
+          if (sbSourcesResp.ok) {
+            const sbSources = await sbSourcesResp.json();
+            if (Array.isArray(sbSources) && sbSources.length > 0) {
+              state.sources = sbSources;
+              safeSetStorage(STORAGE_KEYS.SOURCES, state.sources);
+            }
+          }
+        }
+
+        // 2. Fetch live high-signal AI stories & Show HN projects from Algolia HN API (CORS-friendly)
+        const hnResp = await fetch(
+          'https://hn.algolia.com/api/v1/search_by_date?query=LLM+OR+%22AI+agent%22+OR+MCP&tags=story&numericFilters=points%3E30&hitsPerPage=6'
+        );
+        if (hnResp.ok) {
+          const hnData = await hnResp.json();
+          (hnData.hits || []).forEach(function (hit) {
+            const extId = 'hn:' + hit.objectID;
+            if (!existingById.has(extId) && hit.title) {
+              const isShowHn = hit.title.toLowerCase().indexOf('show hn') !== -1;
+              const cat = isShowHn ? 'project' : 'news';
+              const newItem = {
+                external_id: extId,
+                category: cat,
+                title: hit.title,
+                url: hit.url || 'https://news.ycombinator.com/item?id=' + hit.objectID,
+                authors_or_creator: hit.author || 'Hacker News',
+                published_at: hit.created_at || new Date().toISOString(),
+                ai_summary:
+                  'Live Hacker News community signal (' +
+                  (hit.points || 0) +
+                  ' points, ' +
+                  (hit.num_comments || 0) +
+                  ' comments). Discusses emerging AI tooling, architecture patterns, and engineering benchmarks.',
+                practical_takeaway: isShowHn
+                  ? 'Inspect the launch thread and repo to see if this project solves a bottleneck in your personal AI stack.'
+                  : 'Read the top engineering comments on Hacker News for production caveats and real-world latency/cost benchmarks.',
+                tags: inferTagsFromText(hit.title, 'agents'),
+                metrics: { points: hit.points || 0, comments: hit.num_comments || 0 },
+                status: 'inbox',
+                is_bookmarked: false,
+                personal_notes: ''
+              };
+              state.items.unshift(newItem);
+              existingById.set(extId, newItem);
+              addedCount++;
+            }
+          });
+        }
+
+        // 3. Fetch live trending AI / MCP repositories from GitHub public REST API (CORS-friendly)
+        const ghResp = await fetch(
+          'https://api.github.com/search/repositories?q=topic:mcp+OR+topic:ai-agents+stars:%3E50&sort=updated&order=desc&per_page=5'
+        );
+        if (ghResp.ok) {
+          const ghData = await ghResp.json();
+          (ghData.items || []).forEach(function (repo) {
+            const extId = 'gh:' + repo.id;
+            if (!existingById.has(extId) && repo.full_name) {
+              const newItem = {
+                external_id: extId,
+                category: 'github',
+                title: repo.full_name,
+                url: repo.html_url,
+                authors_or_creator: (repo.owner && repo.owner.login) || 'github',
+                published_at: repo.updated_at || new Date().toISOString(),
+                ai_summary:
+                  repo.description ||
+                  'Open-source AI repository actively updated on GitHub.',
+                practical_takeaway:
+                  'Clone or inspect the README quickstart to test integrating this open-source tool into your local AI workflow.',
+                tags: inferTagsFromText(
+                  repo.full_name + ' ' + (repo.description || '') + ' ' + (repo.topics || []).join(' '),
+                  'coding'
+                ),
+                metrics: {
+                  stars: repo.stargazers_count || 0,
+                  forks: repo.forks_count || 0,
+                  language: repo.language || 'Code'
+                },
+                status: 'inbox',
+                is_bookmarked: false,
+                personal_notes: ''
+              };
+              state.items.unshift(newItem);
+              existingById.set(extId, newItem);
+              addedCount++;
+            }
+          });
+        }
+
+        persistItems();
+        renderAll();
+        if (addedCount > 0) {
+          showToast('Pulled ' + addedCount + ' fresh live AI item(s) into your feed!', 'emerald');
+        } else {
+          showToast('Feed is up to date with latest live items.', 'indigo');
+        }
+      } catch (err) {
+        showToast('Live sync completed (offline/sandbox fallback active).', 'amber');
+      } finally {
+        state.isSyncing = false;
+        syncBtnLabel.textContent = 'Pull Live Feeds';
+        syncIcon.classList.remove('animate-spin');
+      }
+    }
+
+    // =========================================================================
+    // Event Listeners Initialization
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', function () {
+      // Search input
+      const searchInput = document.getElementById('searchInput');
+      const clearSearchBtn = document.getElementById('clearSearchBtn');
+
+      searchInput.addEventListener('input', function (e) {
+        state.searchQuery = e.target.value;
+        clearSearchBtn.classList.toggle('hidden', !state.searchQuery);
+        renderFeedGrid();
+      });
+
+      clearSearchBtn.addEventListener('click', function () {
+        state.searchQuery = '';
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        renderFeedGrid();
+      });
+
+      // Sort & Unread controls
+      document.getElementById('sortSelect').addEventListener('change', function (e) {
+        state.sortBy = e.target.value;
+        renderFeedGrid();
+      });
+
+      document.getElementById('unreadOnlyToggle').checked = state.hideArchived;
+      document.getElementById('unreadOnlyToggle').addEventListener('change', function (e) {
+        state.hideArchived = e.target.checked;
+        renderAll();
+      });
+
+      // Quick KPI cards filter
+      document.querySelectorAll('.quick-stat-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const targetView = btn.getAttribute('data-quick-view');
+          state.activeView = targetView || 'all';
+          renderAll();
+        });
+      });
+
+      // Reset filters buttons
+      function resetAllFilters() {
+        state.activeView = 'all';
+        state.activeTag = 'all';
+        state.searchQuery = '';
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        renderAll();
+      }
+      document.getElementById('resetFiltersBtn').addEventListener('click', resetAllFilters);
+      document.getElementById('emptyResetBtn').addEventListener('click', resetAllFilters);
+
+      // Sync Live Feeds button
+      document.getElementById('syncLiveBtn').addEventListener('click', pullLiveFeeds);
+
+      // Sources & DB Modal
+      const sourcesModal = document.getElementById('sourcesModal');
+      document.getElementById('openSourcesModalBtn').addEventListener('click', function () {
+        document.getElementById('sbUrlInput').value = (state.supabase && state.supabase.url) || '';
+        document.getElementById('sbKeyInput').value = (state.supabase && state.supabase.key) || '';
+        renderSourcesModalList();
+        sourcesModal.classList.remove('hidden');
+      });
+      document.getElementById('closeSourcesModalBtn').addEventListener('click', function () {
+        sourcesModal.classList.add('hidden');
+      });
+
+      document.getElementById('addSourceForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const name = document.getElementById('srcNameInput').value.trim();
+        const category = document.getElementById('srcCategorySelect').value;
+        const driver = document.getElementById('srcDriverSelect').value;
+        const query = document.getElementById('srcQueryInput').value.trim();
+        if (!name || !query) return;
+
+        const newSource = {
+          id: 'src-custom-' + Date.now(),
+          name: name,
+          category: category,
+          driver: driver,
+          feed_url_or_query: query,
+          active: true
+        };
+        state.sources.unshift(newSource);
+        safeSetStorage(STORAGE_KEYS.SOURCES, state.sources);
+        syncSupabaseAddSource(newSource);
+        document.getElementById('srcNameInput').value = '';
+        document.getElementById('srcQueryInput').value = '';
+        renderSourcesModalList();
+        showToast('Added "' + name + '" to active ingestion sources', 'emerald');
+      });
+
+      document.getElementById('supabaseConfigForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        state.supabase = {
+          url: document.getElementById('sbUrlInput').value.trim(),
+          key: document.getElementById('sbKeyInput').value.trim()
+        };
+        safeSetStorage(STORAGE_KEYS.SUPABASE, state.supabase);
+        renderKPIs();
+        showToast('Saved Supabase settings — syncing with cloud...', 'emerald');
+        await pullLiveFeeds();
+        renderSourcesModalList();
+      });
+
+      document.getElementById('disconnectSupabaseBtn').addEventListener('click', function () {
+        state.supabase = { url: '', key: '' };
+        document.getElementById('sbUrlInput').value = '';
+        document.getElementById('sbKeyInput').value = '';
+        safeSetStorage(STORAGE_KEYS.SUPABASE, state.supabase);
+        renderKPIs();
+        showToast('Cleared Supabase credentials (using local storage)', 'indigo');
+      });
+
+      // Add Custom Item Modal
+      const addItemModal = document.getElementById('addItemModal');
+      document.getElementById('openAddItemBtn').addEventListener('click', function () {
+        addItemModal.classList.remove('hidden');
+      });
+      document.getElementById('closeAddItemModalBtn').addEventListener('click', function () {
+        addItemModal.classList.add('hidden');
+      });
+      document.getElementById('cancelAddItemBtn').addEventListener('click', function () {
+        addItemModal.classList.add('hidden');
+      });
+
+      document.getElementById('addItemForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const category = document.getElementById('itemCategoryInput').value;
+        const status = document.getElementById('itemStatusInput').value;
+        const title = document.getElementById('itemTitleInput').value.trim();
+        const url = document.getElementById('itemUrlInput').value.trim();
+        const creator = document.getElementById('itemCreatorInput').value.trim() || 'Custom Entry';
+        const summary = document.getElementById('itemSummaryInput').value.trim();
+        const takeaway = document.getElementById('itemTakeawayInput').value.trim();
+        const rawTags = document.getElementById('itemTagsInput').value;
+        const tags = rawTags
+          .split(',')
+          .map(function (t) { return t.trim().toLowerCase().replace(/^#/, ''); })
+          .filter(Boolean);
+
+        const newItem = {
+          external_id: 'custom:' + Date.now(),
+          category: category,
+          title: title,
+          url: url,
+          authors_or_creator: creator,
+          published_at: new Date().toISOString(),
+          ai_summary: summary,
+          practical_takeaway: takeaway,
+          tags: tags.length ? tags : [category],
+          metrics: { source: 'Manual Log' },
+          status: status,
+          is_bookmarked: status === 'to_test',
+          personal_notes: ''
+        };
+
+        state.items.unshift(newItem);
+        persistItems();
+        syncSupabaseCreateItem(newItem);
+        document.getElementById('addItemForm').reset();
+        addItemModal.classList.add('hidden');
+        renderAll();
+        showToast('Added "' + title.slice(0, 30) + '" to your hub', 'emerald');
+      });
+
+      // Close modals on backdrop click or Escape key
+      [sourcesModal, addItemModal].forEach(function (modal) {
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) modal.classList.add('hidden');
+        });
+      });
+
+      window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          sourcesModal.classList.add('hidden');
+          addItemModal.classList.add('hidden');
+        }
+      });
+
+      // Initial render (and auto-pull if Supabase is already configured)
+      renderAll();
+      if (isSupabaseConfigured()) {
+        pullLiveFeeds();
+      }
+    });
+  </script>
+</body>
+</html>

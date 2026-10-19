@@ -1,0 +1,19 @@
+# Secrets & local credentials
+Supabase DB Pass
+.env
+.env.*
+
+# Local SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# macOS metadata
+.DS_Store
