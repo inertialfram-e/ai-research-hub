@@ -225,10 +225,48 @@
       </div>
 
       <!-- Capability Tags Filter Bar -->
-      <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
-        <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 shrink-0">Capability Tag:</span>
-        <div id="tagFilterBar" class="flex items-center gap-1.5">
-          <!-- Rendered dynamically by JS -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+          <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 shrink-0">Capability Tag:</span>
+          <div id="tagFilterBar" class="flex items-center gap-1.5">
+            <!-- Rendered dynamically by JS -->
+          </div>
+          <button
+            id="toggleEditTagsBtn"
+            type="button"
+            class="ml-auto px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 transition whitespace-nowrap shrink-0 flex items-center gap-1"
+            title="Add, remove, or customize searched capability tags"
+          >
+            <span>⚙️ Edit Tags</span>
+          </button>
+        </div>
+
+        <!-- Inline Tag Editor Drawer -->
+        <div id="tagEditorDrawer" class="hidden pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+          <form id="addCustomTagForm" class="flex items-center gap-2 flex-1 min-w-[240px]">
+            <input
+              id="newTagInput"
+              type="text"
+              placeholder="Add tag or topic (e.g. claude-code, vllm, reasoning, robotics)..."
+              class="flex-1 max-w-xs px-2.5 py-1 text-xs font-mono bg-slate-950 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+            />
+            <button
+              type="submit"
+              class="px-3 py-1 rounded-lg text-xs font-semibold bg-cyan-600 hover:bg-cyan-500 text-white transition shrink-0"
+            >
+              + Add Tag
+            </button>
+          </form>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-400">Click <code class="text-rose-300 font-mono">×</code> on any tag above to remove it, or edit source search queries in <button id="openSourcesFromTagsBtn" type="button" class="text-cyan-400 hover:underline">Sources &amp; DB</button>.</span>
+            <button
+              id="resetDefaultTagsBtn"
+              type="button"
+              class="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"
+            >
+              Reset Defaults
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -548,7 +586,8 @@
     const STORAGE_KEYS = {
       ITEMS: 'nexus_ai_hub_items_v1',
       SOURCES: 'nexus_ai_hub_sources_v1',
-      SUPABASE: 'nexus_ai_hub_supabase_v1'
+      SUPABASE: 'nexus_ai_hub_supabase_v1',
+      TAGS: 'nexus_ai_hub_tags_v1'
     };
 
     function safeGetStorage(key, fallback) {
@@ -818,10 +857,25 @@
     // =========================================================================
     // Application State
     // =========================================================================
+    const DEFAULT_CAPABILITY_TAGS = [
+      'all',
+      'agents',
+      'mcp',
+      'rag',
+      'coding',
+      'prompting',
+      'multimodal',
+      'fine-tuning',
+      'local-ai'
+    ];
+
     const state = {
       items: safeGetStorage(STORAGE_KEYS.ITEMS, INITIAL_ITEMS),
       sources: safeGetStorage(STORAGE_KEYS.SOURCES, INITIAL_SOURCES),
       supabase: safeGetStorage(STORAGE_KEYS.SUPABASE, { url: '', key: '' }),
+      capabilityTags: safeGetStorage(STORAGE_KEYS.TAGS, DEFAULT_CAPABILITY_TAGS),
+      isEditingTags: false,
+      editingSourceId: null,
       activeView: 'all',        // 'all' | 'paper' | 'github' | 'youtube' | 'news' | 'project' | 'to_test' | 'applied' | 'bookmarked'
       activeTag: 'all',         // 'all' or tag string
       searchQuery: '',
@@ -841,18 +895,6 @@
       { id: 'to_test', label: 'To Test Queue', icon: '🧪' },
       { id: 'applied', label: 'Applied', icon: '✅' },
       { id: 'bookmarked', label: 'Bookmarked', icon: '🔖' }
-    ];
-
-    const CAPABILITY_TAGS = [
-      'all',
-      'agents',
-      'mcp',
-      'rag',
-      'coding',
-      'prompting',
-      'multimodal',
-      'fine-tuning',
-      'local-ai'
     ];
 
     const CATEGORY_STYLES = {
@@ -952,8 +994,20 @@
           return false;
         }
         if (state.activeTag !== 'all') {
+          const targetTag = state.activeTag.toLowerCase();
           const itemTags = (item.tags || []).map(function (t) { return t.toLowerCase(); });
-          if (itemTags.indexOf(state.activeTag) === -1) return false;
+          const textHaystack = [
+            item.title,
+            item.authors_or_creator,
+            item.ai_summary,
+            item.practical_takeaway,
+            item.personal_notes
+          ]
+            .join(' ')
+            .toLowerCase();
+          if (itemTags.indexOf(targetTag) === -1 && textHaystack.indexOf(targetTag) === -1) {
+            return false;
+          }
         }
         if (q) {
           const haystack = [
@@ -1056,23 +1110,64 @@
 
     function renderTagBar() {
       const container = document.getElementById('tagFilterBar');
+      const drawer = document.getElementById('tagEditorDrawer');
+      const editBtn = document.getElementById('toggleEditTagsBtn');
       container.innerHTML = '';
 
-      CAPABILITY_TAGS.forEach(function (tag) {
+      if (drawer) {
+        drawer.classList.toggle('hidden', !state.isEditingTags);
+      }
+      if (editBtn) {
+        editBtn.className =
+          'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition shrink-0 ' +
+          (state.isEditingTags
+            ? 'bg-cyan-500/20 text-cyan-200 border-cyan-400/50'
+            : 'bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700');
+      }
+
+      if (!Array.isArray(state.capabilityTags) || state.capabilityTags.length === 0) {
+        state.capabilityTags = DEFAULT_CAPABILITY_TAGS.slice();
+      }
+
+      state.capabilityTags.forEach(function (tag) {
         const isActive = state.activeTag === tag;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'inline-flex items-center';
+
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className =
-          'px-2.5 py-1 rounded-lg text-xs font-mono transition whitespace-nowrap ' +
+          'px-2.5 py-1 text-xs font-mono transition whitespace-nowrap ' +
+          (state.isEditingTags && tag !== 'all' ? 'rounded-l-lg border-y border-l ' : 'rounded-lg border ') +
           (isActive
-            ? 'bg-cyan-500/20 text-cyan-200 border border-cyan-400/50 font-semibold'
-            : 'bg-slate-950/70 text-slate-400 border border-slate-800 hover:border-slate-700 hover:text-slate-200');
+            ? 'bg-cyan-500/20 text-cyan-200 border-cyan-400/50 font-semibold'
+            : 'bg-slate-950/70 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200');
         btn.textContent = tag === 'all' ? 'all-tags' : '#' + tag;
         btn.addEventListener('click', function () {
-          state.activeTag = tag;
+          state.activeTag = state.activeTag === tag && tag !== 'all' ? 'all' : tag;
           renderAll();
         });
-        container.appendChild(btn);
+        wrapper.appendChild(btn);
+
+        if (state.isEditingTags && tag !== 'all') {
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className =
+            'px-1.5 py-1 rounded-r-lg text-xs font-mono border border-slate-800 bg-rose-950/50 text-rose-300 hover:bg-rose-600 hover:text-white transition';
+          removeBtn.title = 'Remove #' + tag + ' from searched tags';
+          removeBtn.textContent = '×';
+          removeBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            state.capabilityTags = state.capabilityTags.filter(function (t) { return t !== tag; });
+            if (state.activeTag === tag) state.activeTag = 'all';
+            safeSetStorage(STORAGE_KEYS.TAGS, state.capabilityTags);
+            showToast('Removed #' + tag + ' from searched tags', 'amber');
+            renderAll();
+          });
+          wrapper.appendChild(removeBtn);
+        }
+
+        container.appendChild(wrapper);
       });
     }
 
@@ -1130,17 +1225,26 @@
         card.className =
           'bg-slate-900/90 border border-slate-800/90 hover:border-slate-700 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3.5 transition shadow-lg shadow-slate-950/50';
 
-        const tagsHtml = (item.tags || [])
-          .map(function (t) {
-            return (
-              '<button type="button" data-tag-click="' +
-              escapeHtml(t) +
-              '" class="px-2 py-0.5 rounded-md text-[11px] font-mono bg-slate-950 text-slate-300 border border-slate-800 hover:border-cyan-500/40 hover:text-cyan-300 transition">#' +
-              escapeHtml(t) +
-              '</button>'
-            );
-          })
-          .join('');
+        const tagsHtml =
+          (item.tags || [])
+            .map(function (t) {
+              return (
+                '<span class="inline-flex items-center rounded-md bg-slate-950 border border-slate-800 hover:border-cyan-500/40 transition">' +
+                '<button type="button" data-tag-click="' +
+                escapeHtml(t) +
+                '" class="px-2 py-0.5 text-[11px] font-mono text-slate-300 hover:text-cyan-300">#' +
+                escapeHtml(t) +
+                '</button>' +
+                (state.isEditingTags
+                  ? '<button type="button" data-tag-remove="' +
+                    escapeHtml(t) +
+                    '" class=" pr-1.5 text-[11px] font-mono text-rose-400 hover:text-rose-200" title="Remove tag from card">×</button>'
+                  : '') +
+                '</span>'
+              );
+            })
+            .join('') +
+          '<button type="button" data-action="add-card-tag" class="px-1.5 py-0.5 rounded-md text-[11px] font-mono bg-slate-900/90 text-slate-400 border border-dashed border-slate-700 hover:border-cyan-500/50 hover:text-cyan-300 transition" title="Add custom tag to this item">+ tag</button>';
 
         const metricsHtml = metricPills
           .map(function (m) {
@@ -1289,6 +1393,42 @@
           });
         });
 
+        card.querySelectorAll('[data-tag-remove]').forEach(function (rmBtn) {
+          rmBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const rmTag = rmBtn.getAttribute('data-tag-remove');
+            item.tags = (item.tags || []).filter(function (t) { return t !== rmTag; });
+            persistItems();
+            syncSupabaseItemFields(item.external_id, { tags: item.tags });
+            showToast('Removed #' + rmTag + ' from item', 'amber');
+            renderAll();
+          });
+        });
+
+        const addCardTagBtn = card.querySelector('[data-action="add-card-tag"]');
+        if (addCardTagBtn) {
+          addCardTagBtn.addEventListener('click', function () {
+            const raw = window.prompt('Add tag(s) to "' + item.title.slice(0, 40) + '..." (comma-separated, e.g. rag, voice-ai):');
+            if (!raw) return;
+            const newTags = raw
+              .split(',')
+              .map(function (t) { return t.trim().toLowerCase().replace(/^#/, ''); })
+              .filter(Boolean);
+            if (!newTags.length) return;
+            item.tags = Array.from(new Set((item.tags || []).concat(newTags)));
+            newTags.forEach(function (nt) {
+              if (state.capabilityTags.indexOf(nt) === -1) {
+                state.capabilityTags.push(nt);
+              }
+            });
+            safeSetStorage(STORAGE_KEYS.TAGS, state.capabilityTags);
+            persistItems();
+            syncSupabaseItemFields(item.external_id, { tags: item.tags });
+            showToast('Updated tags: #' + newTags.join(', #'), 'emerald');
+            renderAll();
+          });
+        }
+
         grid.appendChild(card);
       });
     }
@@ -1300,9 +1440,10 @@
       container.innerHTML = '';
 
       state.sources.forEach(function (src) {
+        const isEditing = state.editingSourceId === src.id;
         const row = document.createElement('div');
         row.className =
-          'p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-wrap items-center justify-between gap-2';
+          'p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex flex-col gap-2';
 
         const cliCommand =
           'python3 ingest_ai_hub.py --add-source --only-add-source --name "' +
@@ -1316,36 +1457,74 @@
           '"';
 
         row.innerHTML =
-          '<div class="min-w-0 flex-1">' +
-          '  <div class="flex items-center gap-2 flex-wrap">' +
-          '    <span class="text-xs font-semibold text-white">' +
+          '<div class="flex flex-wrap items-center justify-between gap-2">' +
+          '  <div class="min-w-0 flex-1">' +
+          '    <div class="flex items-center gap-2 flex-wrap">' +
+          '      <span class="text-xs font-semibold text-white">' +
           escapeHtml(src.name) +
           '</span>' +
-          '    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-indigo-300 border border-slate-700">' +
+          '      <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-indigo-300 border border-slate-700">' +
           escapeHtml(src.category) +
           ' / ' +
           escapeHtml(src.driver) +
           '</span>' +
-          '  </div>' +
-          '  <p class="text-[11px] font-mono text-slate-400 truncate mt-0.5">' +
+          '    </div>' +
+          '    <p class="text-[11px] font-mono text-slate-400 truncate mt-0.5">' +
           escapeHtml(src.feed_url_or_query) +
           '</p>' +
-          '</div>' +
-          '<div class="flex items-center gap-1.5 shrink-0">' +
-          '  <button type="button" data-src-action="copy-cli" class="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Copy ingest_ai_hub.py CLI command">' +
-          '    Copy CLI' +
-          '  </button>' +
-          '  <button type="button" data-src-action="toggle-active" class="px-2.5 py-1 rounded-lg text-[11px] font-medium border ' +
+          '  </div>' +
+          '  <div class="flex items-center gap-1.5 shrink-0">' +
+          '    <button type="button" data-src-action="edit" class="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700" title="Edit searched tag / query">' +
+          (isEditing ? 'Cancel' : 'Edit Query') +
+          '    </button>' +
+          '    <button type="button" data-src-action="copy-cli" class="px-2.5 py-1 rounded-lg text-[11px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Copy ingest_ai_hub.py CLI command">' +
+          '      Copy CLI' +
+          '    </button>' +
+          '    <button type="button" data-src-action="toggle-active" class="px-2.5 py-1 rounded-lg text-[11px] font-medium border ' +
           (src.active
             ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
             : 'bg-slate-800 border-slate-700 text-slate-400') +
           '">' +
           (src.active ? 'Active' : 'Paused') +
-          '  </button>' +
-          '  <button type="button" data-src-action="delete" class="p-1 rounded-lg text-slate-500 hover:text-rose-400" title="Remove source">' +
-          '    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
-          '  </button>' +
-          '</div>';
+          '    </button>' +
+          '    <button type="button" data-src-action="delete" class="p-1 rounded-lg text-slate-500 hover:text-rose-400" title="Remove source">' +
+          '      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>' +
+          '    </button>' +
+          '  </div>' +
+          '</div>' +
+          (isEditing
+            ? '<div class="pt-2 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">' +
+              '  <input type="text" data-edit-name="true" value="' +
+              escapeHtml(src.name) +
+              '" placeholder="Source Name" class="sm:col-span-4 px-2.5 py-1.5 text-xs bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500" />' +
+              '  <input type="text" data-edit-query="true" value="' +
+              escapeHtml(src.feed_url_or_query) +
+              '" placeholder="Searched tag, topic, query, or RSS URL" class="sm:col-span-6 px-2.5 py-1.5 text-xs font-mono bg-slate-900 border border-slate-700 rounded-lg text-cyan-200 focus:outline-none focus:border-cyan-500" />' +
+              '  <button type="button" data-src-action="save-edit" class="sm:col-span-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-600 hover:bg-cyan-500 text-white">Save</button>' +
+              '</div>'
+            : '');
+
+        row.querySelector('[data-src-action="edit"]').addEventListener('click', function () {
+          state.editingSourceId = isEditing ? null : src.id;
+          renderSourcesModalList();
+        });
+
+        const saveEditBtn = row.querySelector('[data-src-action="save-edit"]');
+        if (saveEditBtn) {
+          saveEditBtn.addEventListener('click', function () {
+            const oldQuery = src.feed_url_or_query;
+            const newName = row.querySelector('[data-edit-name="true"]').value.trim();
+            const newQuery = row.querySelector('[data-edit-query="true"]').value.trim();
+            if (!newName || !newQuery) return;
+            src.name = newName;
+            src.feed_url_or_query = newQuery;
+            state.editingSourceId = null;
+            safeSetStorage(STORAGE_KEYS.SOURCES, state.sources);
+            syncSupabaseSourceUpdate(src, oldQuery);
+            renderSourcesModalList();
+            showToast('Updated searched query for "' + src.name + '"', 'emerald');
+          });
+        }
 
         row.querySelector('[data-src-action="copy-cli"]').addEventListener('click', function () {
           copyTextToClipboard(cliCommand, 'Copied ingest_ai_hub.py CLI command');
@@ -1483,6 +1662,28 @@
       }
     }
 
+    async function syncSupabaseSourceUpdate(src, oldQuery) {
+      if (!isSupabaseConfigured()) return;
+      try {
+        const base = state.supabase.url.replace(/\/$/, '');
+        const filterParam =
+          src.id && String(src.id).indexOf('src-') !== 0
+            ? 'id=eq.' + encodeURIComponent(src.id)
+            : 'feed_url_or_query=eq.' + encodeURIComponent(oldQuery || src.feed_url_or_query);
+        const url = base + '/rest/v1/sources?' + filterParam;
+        await fetch(url, {
+          method: 'PATCH',
+          headers: getSupabaseHeaders(),
+          body: JSON.stringify({
+            name: src.name,
+            feed_url_or_query: src.feed_url_or_query
+          })
+        });
+      } catch (e) {
+        // Ignore network error
+      }
+    }
+
     async function syncSupabaseSourceDelete(src) {
       if (!isSupabaseConfigured()) return;
       try {
@@ -1519,6 +1720,11 @@
         'local-ai': ['ollama', 'gguf', 'llama.cpp', 'local', 'on-device'],
         prompting: ['prompt', 'reasoning', 'eval', 'benchmark']
       };
+      (state.capabilityTags || []).forEach(function (customTag) {
+        if (customTag !== 'all' && !rules[customTag]) {
+          rules[customTag] = [customTag.toLowerCase(), customTag.replace(/-/g, ' ').toLowerCase()];
+        }
+      });
       const tags = [];
       Object.keys(rules).forEach(function (tag) {
         if (rules[tag].some(function (kw) { return lower.indexOf(kw) !== -1; })) {
@@ -1526,7 +1732,7 @@
         }
       });
       if (tags.length === 0) tags.push(fallbackCategory || 'agents');
-      return tags.slice(0, 4);
+      return tags.slice(0, 5);
     }
 
     async function pullLiveFeeds() {
@@ -1584,8 +1790,16 @@
         }
 
         // 2. Fetch live high-signal AI stories & Show HN projects from Algolia HN API (CORS-friendly)
+        const customSearchTags = (state.capabilityTags || []).filter(function (t) {
+          return DEFAULT_CAPABILITY_TAGS.indexOf(t) === -1 && t !== 'all';
+        });
+        const hnQueryTerms = ['LLM', '"AI agent"', 'MCP', 'Anthropic', 'OpenAI', 'Gemini'].concat(
+          customSearchTags.slice(0, 4).map(function (t) { return '"' + t.replace(/-/g, ' ') + '"'; })
+        );
         const hnResp = await fetch(
-          'https://hn.algolia.com/api/v1/search_by_date?query=LLM+OR+%22AI+agent%22+OR+MCP+OR+Anthropic+OR+OpenAI+OR+Gemini&tags=story&numericFilters=points%3E20&hitsPerPage=15'
+          'https://hn.algolia.com/api/v1/search_by_date?query=' +
+            encodeURIComponent(hnQueryTerms.join(' OR ')) +
+            '&tags=story&numericFilters=points%3E20&hitsPerPage=15'
         );
         if (hnResp.ok) {
           const hnData = await hnResp.json();
@@ -1624,8 +1838,14 @@
         }
 
         // 3. Fetch live trending AI / MCP repositories from GitHub public REST API (CORS-friendly)
+        const ghTopic =
+          state.activeTag && state.activeTag !== 'all'
+            ? 'topic:' + encodeURIComponent(state.activeTag)
+            : customSearchTags.length > 0
+            ? 'topic:' + encodeURIComponent(customSearchTags[0])
+            : 'topic:ai-agents';
         const ghResp = await fetch(
-          'https://api.github.com/search/repositories?q=topic:ai-agents+stars:%3E25&sort=updated&order=desc&per_page=15'
+          'https://api.github.com/search/repositories?q=' + ghTopic + '+stars:%3E20&sort=updated&order=desc&per_page=15'
         );
         if (ghResp.ok) {
           const ghData = await ghResp.json();
@@ -1737,8 +1957,63 @@
       // Sync Live Feeds button
       document.getElementById('syncLiveBtn').addEventListener('click', pullLiveFeeds);
 
+      // Searched Tags Customization Controls
+      const toggleEditTagsBtn = document.getElementById('toggleEditTagsBtn');
+      if (toggleEditTagsBtn) {
+        toggleEditTagsBtn.addEventListener('click', function () {
+          state.isEditingTags = !state.isEditingTags;
+          renderAll();
+        });
+      }
+
+      const addCustomTagForm = document.getElementById('addCustomTagForm');
+      if (addCustomTagForm) {
+        addCustomTagForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const input = document.getElementById('newTagInput');
+          const raw = (input.value || '').trim();
+          if (!raw) return;
+          const newTags = raw
+            .split(',')
+            .map(function (t) { return t.trim().toLowerCase().replace(/^#/, ''); })
+            .filter(Boolean);
+          if (!newTags.length) return;
+
+          newTags.forEach(function (nt) {
+            if (state.capabilityTags.indexOf(nt) === -1) {
+              state.capabilityTags.push(nt);
+            }
+          });
+          state.activeTag = newTags[0];
+          safeSetStorage(STORAGE_KEYS.TAGS, state.capabilityTags);
+          input.value = '';
+          renderAll();
+          showToast('Added #' + newTags.join(', #') + ' to searched tags', 'emerald');
+        });
+      }
+
+      const resetDefaultTagsBtn = document.getElementById('resetDefaultTagsBtn');
+      if (resetDefaultTagsBtn) {
+        resetDefaultTagsBtn.addEventListener('click', function () {
+          state.capabilityTags = DEFAULT_CAPABILITY_TAGS.slice();
+          state.activeTag = 'all';
+          safeSetStorage(STORAGE_KEYS.TAGS, state.capabilityTags);
+          renderAll();
+          showToast('Reset searched tags to defaults', 'indigo');
+        });
+      }
+
       // Sources & DB Modal
       const sourcesModal = document.getElementById('sourcesModal');
+      const openSourcesFromTagsBtn = document.getElementById('openSourcesFromTagsBtn');
+      if (openSourcesFromTagsBtn) {
+        openSourcesFromTagsBtn.addEventListener('click', function () {
+          document.getElementById('sbUrlInput').value = (state.supabase && state.supabase.url) || '';
+          document.getElementById('sbKeyInput').value = (state.supabase && state.supabase.key) || '';
+          renderSourcesModalList();
+          sourcesModal.classList.remove('hidden');
+        });
+      }
       document.getElementById('openSourcesModalBtn').addEventListener('click', function () {
         document.getElementById('sbUrlInput').value = (state.supabase && state.supabase.url) || '';
         document.getElementById('sbKeyInput').value = (state.supabase && state.supabase.key) || '';
