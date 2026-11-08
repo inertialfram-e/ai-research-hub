@@ -2142,6 +2142,23 @@
       if (isSupabaseConfigured()) {
         pullLiveFeeds();
       }
+
+      // First-party homelab telemetry beacon (reports GitHub Pages visits to Caddy Web Analytics on CT 107)
+      (function () {
+        try {
+          var nav = performance && performance.getEntriesByType ? performance.getEntriesByType("navigation")[0] : null;
+          var ms = nav && nav.responseEnd ? Math.round(nav.responseEnd) : 12;
+          var u = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+          var r = encodeURIComponent(document.referrer || "Direct");
+          var h = encodeURIComponent(window.location.hostname || "inertialfram-e.github.io");
+          var beaconUrl = "https://inertialframe.access.ly/api/beacon/ai-hub?u=" + u + "&r=" + r + "&ms=" + ms + "&h=" + h + "&t=" + Date.now();
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(beaconUrl);
+          } else {
+            fetch(beaconUrl, { mode: "no-cors", keepalive: true }).catch(function () {});
+          }
+        } catch (_e) {}
+      })();
     });
   </script>
 </body>
